@@ -194,6 +194,7 @@ class Game:
 
 	def __init__(self):
 		Button.callback = self.clicked
+		self.getRandBtns()
 
 	def getRandBtns(self):
 		desk.leds(False)
