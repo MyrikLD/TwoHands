@@ -219,17 +219,18 @@ class Game:
 				self.nextRound()
 
 	def _nextStage(self):
-		print('next stage')
 		self.stage += 1
+		print('next stage: ' + str(self.stage))
 		self.round = 0
 		self.getRandBtns()
 
 	def nextRound(self):
-		print('next round')
 		self.round += 1
+
 		if self.round > 3:
 			self._nextStage()
 		else:
+			print('next round: ' + str(self.round))
 			self.getRandBtns()
 
 	def resetRound(self):
