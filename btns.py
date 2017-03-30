@@ -65,7 +65,7 @@ class Button:
 
 	def _callback(self, t):
 		if GPIO.input(self.btnPin) and time() - self.lp > 0.35:
-			print(self.pol + str(self.num))
+			#print(self.pol + str(self.num))
 			self.lp = time()
 			# self.led(not self.ledState)
 			# sleep(0.1)

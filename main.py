@@ -211,19 +211,16 @@ class Game:
 			btn.led(False)
 			self.btns.remove(btn)
 			if len(self.btns) == 0:
-				if self.round < 4:
-					self.round += 1
-					self.getRandBtns()
-				else:
-					self.rouend = 0
-					self.stage += 1
+				self.nextStage()
 
 	def nextStage(self):
+		print('next stage')
 		self.stage += 1
 		self.round = 0
 		self.getRandBtns()
 
 	def nextRound(self):
+		print('next round')
 		self.round += 1
 		if self.round > 3:
 			self.nextStage()
@@ -231,11 +228,12 @@ class Game:
 			self.getRandBtns()
 
 	def resetRound(self):
+		print('Reset round')
 		self.round = 0
 		self.getRandBtns()
 
 	def clicked(self, btn):
-		print(btn)
+		print(btn.pol + str(btn.num))
 		if self.round < 2:
 			if btn not in self.btns:
 				self.resetRound()
