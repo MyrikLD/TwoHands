@@ -218,35 +218,47 @@ class Game:
 					self.rouend = 0
 					self.stage += 1
 
+	def nextStage(self):
+		self.stage += 1
+		self.round = 0
+		self.getRandBtns()
+
+	def nextRound(self):
+		self.round += 1
+		if self.round > 3:
+			self.nextStage()
+		else:
+			self.getRandBtns()
+
+	def resetRound(self):
+		self.round = 0
+		self.getRandBtns()
+
 	def clicked(self, btn):
-		print(self)
 		print(btn)
 		if self.round < 2:
 			if btn not in self.btns:
-				self.round = 0
-				self.getRandBtns()
+				self.resetRound()
 			else:
 				btn.led(False)
 				self.btns.remove(btn)
 				if len(self.btns) == 0:
-					if self.round < 4:
-						self.round += 1
-						self.getRandBtns()
-					else:
-						self.rouend = 0
-						self.stage += 1
+					self.nextStage()
 		else:
-			if self.stage == 3:
-				a = list(LANCAM)
+
 			if self.stage == 4:
 				a = list([LANCAM[-(i + 1)] for i in range(len(LANCAM))])
+			else:
+				a = list(LANCAM)
+
 			if btn.pos == 'left':
 				net = a[0].net
-			if btn.pos == 'right':
+			else:
 				net = a[1].net
 			url = 'http://' + str(net['ip']) + ':' + str(net['port']) + '/' + str(btn) + '.btn'
 			url = urllib.urlopen(url)
 			a = url.getcode()
+			print(str(url)+' '+str(a))
 			url.close()
 
 
