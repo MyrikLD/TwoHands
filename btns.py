@@ -10,6 +10,7 @@ except RuntimeError:
 		OUT = 3
 		IN = 4
 		FALLING = 5
+		BOTH = 6
 
 		def setup(self, *args, **kwargs):
 			pass
@@ -49,7 +50,7 @@ class Button:
 
 		GPIO.setup(l, GPIO.OUT)
 		GPIO.setup(b, GPIO.IN, pull_up_down=pup)
-		GPIO.add_event_detect(b, GPIO.FALLING, callback=self._callback, bouncetime=100)
+		GPIO.add_event_detect(b, GPIO.BOTH, callback=self._callback)
 		self.led(False)
 
 		for i in range(len(pairs)):
