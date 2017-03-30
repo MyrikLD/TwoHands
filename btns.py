@@ -10,6 +10,7 @@ except RuntimeError:
 		OUT = 3
 		IN = 4
 		FALLING = 5
+
 		def setup(self, *args, **kwargs):
 			pass
 
@@ -24,6 +25,7 @@ except RuntimeError:
 
 		def remove_event_detect(self, *args, **kwargs):
 			pass
+
 
 	GPIO = gpio()
 
@@ -49,6 +51,11 @@ class Button:
 		GPIO.add_event_detect(b, GPIO.FALLING, callback=self._callback, bouncetime=100)
 		self.led(False)
 
+		for i in range(len(pairs)):
+			if pairs[i][0] == b and pairs[i][1] == l:
+				self.pol = 'left' if i < 4 else 'right'
+				self.num = i % 4
+
 	def get(self):
 		return GPIO.input(self.btnPin)
 
@@ -60,9 +67,9 @@ class Button:
 		if GPIO.input(self.btnPin) and time() - self.lp > 0.35:
 			print(self.pol + str(self.num))
 			self.lp = time()
-			#self.led(not self.ledState)
-			#sleep(0.1)
-			#self.led(not self.ledState)
+			# self.led(not self.ledState)
+			# sleep(0.1)
+			# self.led(not self.ledState)
 			self.callback(self)
 
 	def callback(self, btn):
