@@ -37,6 +37,7 @@ class Button:
 	btnPin = 0
 
 	ledState = False
+	lp = 0
 
 	def __init__(self, b, l, pup=False):
 		self.ledPin = l

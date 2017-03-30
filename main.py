@@ -9,6 +9,7 @@ from SocketServer import ThreadingMixIn
 from cv2 import imshow, namedWindow, setWindowProperty
 from platform import machine
 from threading import Thread
+import re
 
 import cv2
 import numpy as np
@@ -277,6 +278,7 @@ def createFrame():
 
 def window(*cam):
 	global STAGE
+
 	while (True):
 		frame = createFrame()
 
@@ -325,6 +327,7 @@ if __name__ == '__main__':
 
 	th = Thread(target=window, args=(cam)).start()
 	th1 = Thread(target=serve, args=()).start()
+	Thread(target=window, args=(cam)).
 
 	LANCAM = list()
 	for i in other:
