@@ -240,7 +240,7 @@ class Game:
 
 	def clicked(self, btn):
 		print(btn.pos + str(btn.num))
-		if self.round < 2:
+		if self.stage <= 2:
 			if btn not in self.btns:
 				self.resetRound()
 			else:
