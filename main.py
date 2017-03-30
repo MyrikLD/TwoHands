@@ -327,7 +327,7 @@ if __name__ == '__main__':
 
 	th = Thread(target=window, args=(cam)).start()
 	th1 = Thread(target=serve, args=()).start()
-	Thread(target=window, args=(cam)).
+	Thread(target=window, args=(cam))
 
 	LANCAM = list()
 	for i in other:
