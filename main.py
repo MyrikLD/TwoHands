@@ -198,7 +198,7 @@ class Game:
 
 	def getRandBtns(self):
 		desk.leds(False)
-		self.btns = list([random.choise(desk.L), random.choise(desk.R)])
+		self.btns = list([random.choice(desk.L), random.choice(desk.R)])
 		for i in self.btns:
 			i.led(True)
 
@@ -243,7 +243,7 @@ class Game:
 				net = a[0].net
 			if btn.pos == 'right':
 				net = a[1].net
-			url = 'http://'+str(net['ip'])+':'+str(net['port'])+'/'+str(btn)+'.btn'
+			url = 'http://' + str(net['ip']) + ':' + str(net['port']) + '/' + str(btn) + '.btn'
 			url = urllib.urlopen(url)
 			a = url.getcode()
 			url.close()
