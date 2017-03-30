@@ -238,7 +238,7 @@ class Game:
 		self.getRandBtns()
 
 	def clicked(self, btn):
-		print(btn.pol + str(btn.num))
+		print(btn.pos + str(btn.num))
 		if self.round < 2:
 			if btn not in self.btns:
 				self.resetRound()

@@ -55,7 +55,7 @@ class Button:
 
 		for i in range(len(pairs)):
 			if pairs[i][0] == b and pairs[i][1] == l:
-				self.pol = 'left' if i < 4 else 'right'
+				self.pos = 'left' if i < 4 else 'right'
 				self.num = i % 4
 
 	def get(self):
