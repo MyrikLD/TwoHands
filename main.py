@@ -199,6 +199,11 @@ class Game:
 
 	def getRandBtns(self):
 		desk.leds(False)
+		for i in desk.L:
+			i.clicked = False
+		for i in desk.R:
+			i.clicked = False
+
 		self.btns = list([random.choice(desk.L), random.choice(desk.R)])
 		for i in self.btns:
 			i.led(True)
@@ -228,7 +233,7 @@ class Game:
 			self.getRandBtns()
 
 	def resetRound(self):
-		print('Reset round')
+		print('reset round')
 		self.round = 0
 		self.getRandBtns()
 
@@ -239,8 +244,7 @@ class Game:
 				self.resetRound()
 			else:
 				btn.led(False)
-				self.btns.remove(btn)
-				if len(self.btns) == 0:
+				if self.btns[0].clicked and self.btns[1].clicked:
 					self.nextRound()
 		else:
 

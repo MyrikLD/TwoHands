@@ -40,6 +40,7 @@ class Button:
 
 	ledState = False
 	lp = 0
+	clicked = False
 
 	def __init__(self, b, l, pup=False):
 		self.ledPin = l
@@ -65,6 +66,7 @@ class Button:
 
 	def _callback(self, t):
 		if GPIO.input(self.btnPin) and time() - self.lp > 0.35:
+			self.clicked = True
 			#print(self.pol + str(self.num))
 			self.lp = time()
 			# self.led(not self.ledState)
