@@ -211,9 +211,9 @@ class Game:
 			btn.led(False)
 			self.btns.remove(btn)
 			if len(self.btns) == 0:
-				self.nextStage()
+				self.nextRound()
 
-	def nextStage(self):
+	def _nextStage(self):
 		print('next stage')
 		self.stage += 1
 		self.round = 0
@@ -223,7 +223,7 @@ class Game:
 		print('next round')
 		self.round += 1
 		if self.round > 3:
-			self.nextStage()
+			self._nextStage()
 		else:
 			self.getRandBtns()
 
@@ -241,7 +241,7 @@ class Game:
 				btn.led(False)
 				self.btns.remove(btn)
 				if len(self.btns) == 0:
-					self.nextStage()
+					self.nextRound()
 		else:
 
 			if self.stage == 4:
