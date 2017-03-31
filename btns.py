@@ -68,15 +68,12 @@ class Button:
 	def _callback(self, t):
 		if GPIO.input(self.btnPin) and time() - self.lp > 0.35:
 			self.clicked = True
-			#print(self.pol + str(self.num))
 			self.lp = time()
-			# self.led(not self.ledState)
-			# sleep(0.1)
-			# self.led(not self.ledState)
 			self.callback(self)
 
-	def callback(self, btn):
-		pass
+	def callback(self, btn):    
+		#print(self.pol + str(self.num))
+		print(btn)
 
 	def __str__(self):
 		return 'Btn: %s | Led: %s' % (self.btnPin, self.ledPin)
@@ -116,39 +113,46 @@ desk = Desk(pairs)
 
 
 def test1():
-	for i in deskL:
+	for i in desk.L:
 		i.led(True)
+	print("Left")
 	input()
-	for i in deskL:
-		i.led(False)
+	desk.leds(False)
 
-	for i in deskR:
+	for i in desk.R:
 		i.led(True)
+	print("Right")
 	input()
-	for i in deskR:
-		i.led(False)
+	desk.leds(False)
 
-	for i in deskL:
+	for i in desk.L:
 		i.led(True)
+		print(i)
 		input()
 		i.led(False)
 
-	for i in deskR:
+	for i in desk.R:
 		i.led(True)
+		print(i)
 		input()
 		i.led(False)
+
+	print("All")
+	desk.leds(True)
+	input()
+	
 
 
 def test2():
-	target = deskR
+	print("Raduga")
 	while True:
 		for i in range(4):
-			deskL[i].led(True)
-			deskR[i].led(True)
+			desk.L[i].led(True)
+			desk.R[i].led(True)
 			sleep(0.2)
 		for i in range(4):
-			deskL[i].led(False)
-			deskR[i].led(False)
+			desk.L[i].led(False)
+			desk.R[i].led(False)
 
 
 if __name__ == '__main__':
@@ -157,9 +161,9 @@ if __name__ == '__main__':
 	except NameError:
 		pass
 
-	for i in deskL:
+	for i in desk.L:
 		print(i)
-	for i in deskR:
+	for i in desk.R:
 		print(i)
 
 	test1()
