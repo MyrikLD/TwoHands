@@ -19,7 +19,7 @@ from btns import desk, Button
 STAGE = 0
 LANCAM = list()
 WindowName = 'Term'
-FULLSCREEN = False
+FULLSCREEN = True
 
 with open('settings.json') as json_data:
 	settings = json.load(json_data)
