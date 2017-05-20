@@ -29,13 +29,39 @@ class CamHandler(BaseHTTPRequestHandler):
 	streams = None
 
 	def do_GET(self):
-		name = self.path[1:self.path.find('.')]
+		path = self.path.split('/')[1:]
+        data = path[-1]
+        name = data
+        args = dict()
+        end = str()        	
 
-		if self.path.endswith('.btn'):
+        if '?' in data:
+        	name, args = data.split('?')
+        	args = args.split('&')
+        	ar = dict()
+        	for i in range(len(args)):
+        		r = args[i].split('=')
+        		if len(r) == 2:
+        			ar.update({r[0]: r[1]})
+        		else:
+        			ar.update({r[0]: str()})
+        	args = ar
+        if '.' in name:
+        	name, end = name.split('.')
+        	
+        if len(path) == 2 and path[0] == '0' and name == 'execute_2':
+        	game.reset(False)
+        	param_1 = args.get('param_1', '')
+        	if param_1 == 'on':
+        		desk.leds(True)
+        	elif param_1 == 'off':
+        		desk.leds(False)
+
+		if end == 'btn':
 			self.send_response(200)
 			game.netClick(desk.get(name))
 
-		if self.path.endswith('.mjpg'):
+		if end == 'mjpg':
 			self.send_response(200)
 			self.send_header('Content-type', 'multipart/x-mixed-replace; boundary=--jpgboundary')
 			self.end_headers()
@@ -56,7 +82,8 @@ class CamHandler(BaseHTTPRequestHandler):
 				except KeyboardInterrupt:
 					break
 			return
-		if self.path.endswith('.html'):
+
+		if end == 'html' len(path) == 1 and name.isdigit():
 			self.send_response(200)
 			self.send_header('Content-type', 'text/html')
 			self.end_headers()
@@ -191,11 +218,18 @@ cam = list([VideoStream(0).start(), VideoStream(1).start()])
 class Game:
 	stage = 0
 	round = 0
+	run = False
 	btns = list()
 
 	def __init__(self):
+		self.reset()
 		Button.callback = self.clicked
+		
+  	def reset(self, run=True):
+  		self.stage = 0
+		self.round = 0
 		self.getRandBtns()
+		self.run = True
 
 	def getRandBtns(self):
 		desk.leds(False)
@@ -240,6 +274,10 @@ class Game:
 
 	def clicked(self, btn):
 		print(btn.pos + str(btn.num))
+		
+		if not self.run:
+			return
+			
 		if self.stage <= 2:
 			if btn not in self.btns:
 				self.resetRound()
@@ -248,7 +286,6 @@ class Game:
 				if self.btns[0].clicked and self.btns[1].clicked:
 					self.nextRound()
 		else:
-
 			if self.stage == 4:
 				a = list([LANCAM[-(i + 1)] for i in range(len(LANCAM))])
 			else:
@@ -346,6 +383,6 @@ if __name__ == '__main__':
 
 	LANCAM = list()
 	for i in other:
-		d = VideoStream('http://%s:81/%s.mjpg' % (i[0], i[1]))
+		d = VideoStream('http://%s:5000/%s.mjpg' % (i[0], i[1]))
 		LANCAM.append(d)
 	print(other)
