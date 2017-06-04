@@ -376,7 +376,7 @@ if __name__ == '__main__':
 	WindowName = str(ip)
 	other = settings.get(ip, [])
 	print('my addr: %s'%ip)
-	print('nother: %s'%other)
+	print('other: %s'%other)
 
 	if FULLSCREEN:
 		namedWindow(WindowName, cv2.WND_PROP_FULLSCREEN)
@@ -385,9 +385,9 @@ if __name__ == '__main__':
 		if cv2.__version__.startswith('3.'):
 			setWindowProperty(WindowName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
+	
 	th = Thread(target=window, args=(cam)).start()
 	th1 = Thread(target=serve, args=()).start()
-	Thread(target=window, args=(cam))
 
 	LANCAM = list()
 	for i in other:
