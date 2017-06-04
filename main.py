@@ -375,7 +375,8 @@ if __name__ == '__main__':
 	ip = get_ip_address('eth0' if machine() == 'armv7l' else 'wlp3s0')
 	WindowName = str(ip)
 	other = settings.get(ip, [])
-	print('my addr: %s\nother: %s'%(ip,other))
+	print('my addr: %s'%ip)
+	print('nother: %s'%other)
 
 	if FULLSCREEN:
 		namedWindow(WindowName, cv2.WND_PROP_FULLSCREEN)
