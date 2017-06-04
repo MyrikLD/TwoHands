@@ -372,7 +372,7 @@ cam = list([VideoStream(0).start(), VideoStream(1).start()])
 game = Game()
 
 if __name__ == '__main__':
-	ip = get_ip_address('wlan0' if machine() == 'armv7l' else 'wlp3s0')
+	ip = get_ip_address('eth0' if machine() == 'armv7l' else 'wlp3s0')
 	WindowName = str(ip)
 	other = settings.get(ip, [])
 
