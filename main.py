@@ -122,8 +122,12 @@ class VideoStream:
 	def __init__(self, src=0):
 		if type(src) == int:
 			self.src = src
+			print('Creating camera %s'%src)
 			self.stream = cv2.VideoCapture(src)
-			(self.grabbed, self.frame) = self.stream.read()
+			try:
+				self.grabbed, self.frame = self.stream.read()
+			except Exception as e:
+				print('Camera %s error: %s'%(self.src, e))
 			self.stopped = False
 			self.th = Thread(target=self.update, args=()).start()
 		else:
@@ -169,7 +173,10 @@ class VideoStream:
 					return
 				if self.paused:
 					continue
-				(self.grabbed, self.frame) = self.stream.read()
+				try:
+					(self.grabbed, self.frame) = self.stream.read()
+				except Exception as e:
+					print('Camera %s error: %s'%(self.src, e))
 
 	def read(self):
 		self.pause()
@@ -223,8 +230,6 @@ def comp(*img):
 	frame = cv2.resize(vis, tuple(settings['size']))
 	return frame
 
-
-# VideoStream('http://127.0.0.1:81/0.mjpg')
 
 class Game:
 	stage = 0
@@ -368,7 +373,7 @@ def get_ip_address(ifname):
 		addr = None
 	return addr
 
-cam = list([VideoStream(0).start(), VideoStream(1).start()])
+cam = list()
 game = Game()
 
 if __name__ == '__main__':
@@ -378,6 +383,8 @@ if __name__ == '__main__':
 	print('OpenCV: %s'%cv2.__version__)
 	print('my addr: %s'%ip)
 	print('other: %s'%other)
+	cam = list([VideoStream(0).start(), VideoStream(1).start()])
+	print('Cam created')
 
 	if FULLSCREEN:
 		namedWindow(WindowName, cv2.WND_PROP_FULLSCREEN)
