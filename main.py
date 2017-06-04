@@ -346,8 +346,8 @@ def window(*cam):
 		if key & 0xFF == 32:
 			STAGE = (STAGE + 1) % 3
 
-	cam[0].stop()
-	cam[1].stop()
+	for i in cam:
+		i.stop()
 	cv2.destroyAllWindows()
 	exit(-1)
 
@@ -375,6 +375,7 @@ if __name__ == '__main__':
 	ip = get_ip_address('eth0' if machine() == 'armv7l' else 'wlp3s0')
 	WindowName = str(ip)
 	other = settings.get(ip, [])
+	print('OpenCV: %s'%cv2.__version__)
 	print('my addr: %s'%ip)
 	print('other: %s'%other)
 
