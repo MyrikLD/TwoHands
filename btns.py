@@ -55,7 +55,7 @@ class Button:
 
 		for i in range(len(pairs)):
 			if pairs[i][0] == b and pairs[i][1] == l:
-				self.pos = 'left' if i < 4 else 'right'
+				self.pos = 'L' if i < 4 else 'R'
 				self.num = i % 4
 
 	def get(self):
@@ -76,7 +76,8 @@ class Button:
 		print(btn)
 
 	def __str__(self):
-		return 'Btn: %s | Led: %s' % (self.btnPin, self.ledPin)
+		return '%s%s' % (self.pos, self.btnPin)
+		#return 'Btn: %s | Led: %s' % (self.btnPin, self.ledPin)
 
 	def __del__(self):
 		GPIO.remove_event_detect(self.btnPin)
@@ -101,9 +102,9 @@ class Desk:
 		pos = s[:-1]
 		num = int(s[-1])
 
-		if pos == 'left':
+		if pos == 'L':
 			return self.L[num]
-		if pos == 'right':
+		if pos == 'R':
 			return self.R[num]
 		return None
 
@@ -115,13 +116,13 @@ desk = Desk(pairs)
 def test1():
 	for i in desk.L:
 		i.led(True)
-	print("Left")
+	print("L")
 	input()
 	desk.leds(False)
 
 	for i in desk.R:
 		i.led(True)
-	print("Right")
+	print("R")
 	input()
 	desk.leds(False)
 
@@ -144,7 +145,7 @@ def test1():
 
 
 def test2():
-	print("Raduga")
+	print("Rainbow")
 	while True:
 		for i in range(4):
 			desk.L[i].led(True)

@@ -24,38 +24,51 @@ FULLSCREEN = True
 with open('settings.json') as json_data:
 	settings = json.load(json_data)
 
+def geturl(url):
+	url = urllib.urlopen(url)
+	ret = url.getcode()
+	print(str(url) + ' ' + str(ret))
+	url.close()
+	return ret
 
 class CamHandler(BaseHTTPRequestHandler):
 	streams = None
 
 	def do_GET(self):
 		path = self.path.split('/')[1:]
-        data = path[-1]
-        name = data
-        args = dict()
-        end = str()        	
+		data = path[-1]
+		name = data
+		args = dict()
+		end = str()
+		server = self.client_address[0]
 
-        if '?' in data:
-        	name, args = data.split('?')
-        	args = args.split('&')
-        	ar = dict()
-        	for i in range(len(args)):
-        		r = args[i].split('=')
-        		if len(r) == 2:
-        			ar.update({r[0]: r[1]})
-        		else:
-        			ar.update({r[0]: str()})
-        	args = ar
-        if '.' in name:
-        	name, end = name.split('.')
-        	
-        if len(path) == 2 and path[0] == '0' and name == 'execute_2':
-        	game.reset(False)
-        	param_1 = args.get('param_1', '')
-        	if param_1 == 'on':
-        		desk.leds(True)
-        	elif param_1 == 'off':
-        		desk.leds(False)
+		if '?' in data:
+			name, args = data.split('?')
+			args = args.split('&')
+			ar = dict()
+			for i in range(len(args)):
+				r = args[i].split('=')
+				if len(r) == 2:
+					ar.update({r[0]: r[1]})
+				else:
+					ar.update({r[0]: str()})
+			args = ar
+		if '.' in name:
+			name, end = name.split('.')
+
+		if name == 'execute_2':
+			game.server = server
+			game.reset(False)
+			param_1 = args.get('param_1', '')
+			if param_1 == 'on':
+				desk.leds(True)
+			elif param_1 == 'off':
+				desk.leds(False)
+
+		if name == 'execute_1':
+			game.server = server
+			param_1 = int(args.get('param_1', ''))
+			game.start(param_1)
 
 		if end == 'btn':
 			self.send_response(200)
@@ -68,9 +81,9 @@ class CamHandler(BaseHTTPRequestHandler):
 			while True:
 				try:
 					num = int(name)
-					img = self.streams[num].img()
+					img = self.streams[num].read()
 					if img is not None:
-						img = img.tostring()
+						img = cv2.imencode(".png", img)[1].tostring()
 					else:
 						continue
 
@@ -83,7 +96,7 @@ class CamHandler(BaseHTTPRequestHandler):
 					break
 			return
 
-		if end == 'html' len(path) == 1 and name.isdigit():
+		if end == 'html' and len(path) == 1 and name.isdigit():
 			self.send_response(200)
 			self.send_header('Content-type', 'text/html')
 			self.end_headers()
@@ -101,12 +114,9 @@ class VideoStream:
 	grabbed = None
 	stream = None
 	stopped = True
+	paused = False
 	src = None
 
-	ip = ''
-	port = ''
-	fn = ''
-	ft = ''
 	net = None
 
 	def __init__(self, src=0):
@@ -114,16 +124,12 @@ class VideoStream:
 			self.src = src
 			self.stream = cv2.VideoCapture(src)
 			(self.grabbed, self.frame) = self.stream.read()
+			self.stopped = False
+			self.th = Thread(target=self.update, args=()).start()
 		else:
 			pattern = r"^http:\/\/(?P<ip>[0-9.]+):(?P<port>[0-9]+)\/(?P<fn>.+)\.(?P<ft>.+)$"
 			self.net = re.search(pattern, src).groupdict()
-
 			self.src = str(src)
-
-	def start(self):
-		self.stopped = False
-		Thread(target=self.update, args=()).start()
-		return self
 
 	def update(self):
 		if type(self.src) == str:
@@ -137,6 +143,8 @@ class VideoStream:
 			while True:
 				if self.stopped:
 					return
+				if self.paused:
+					continue
 
 				data += stream.read(1)
 				a = data.find(b'--')
@@ -159,19 +167,27 @@ class VideoStream:
 			while True:
 				if self.stopped:
 					return
+				if self.paused:
+					continue
 				(self.grabbed, self.frame) = self.stream.read()
 
 	def read(self):
-		return self.frame
+		self.pause()
+		img = self.frame
+		self.start()
+		return img
 
-	def img(self):
-		if self.frame is not None:
-			return cv2.imencode(".png", self.read())[1]
-		else:
-			return None
+	def pause(self):
+		self.paused = True
+		return self
+
+	def start(self):
+		self.paused = False
+		return self
 
 	def stop(self):
 		self.stopped = True
+		return self
 
 	def __del__(self):
 		self.stop()
@@ -200,9 +216,7 @@ def comp(*img):
 
 	sz = (max(h), sum(w), 3)
 
-	# Create an array big enough to hold both images next to each other.
 	vis = np.zeros(sz, np.uint8)
-	# Copy both images into the composite image.
 	for i in range(len(img)):
 		vis[:h[i], sum(w[:i]):sum(w[:(i + 1)])] = img[i]
 
@@ -210,26 +224,27 @@ def comp(*img):
 	return frame
 
 
-cam = list([VideoStream(0).start(), VideoStream(1).start()])
-
-
 # VideoStream('http://127.0.0.1:81/0.mjpg')
 
 class Game:
 	stage = 0
 	round = 0
-	run = False
 	btns = list()
+	server = '127.0.0.1'
 
 	def __init__(self):
 		self.reset()
 		Button.callback = self.clicked
-		
-  	def reset(self, run=True):
-  		self.stage = 0
+
+	def start(self, num):
+		self.getRandBtns()
+		self.round = 0
+		self.stage = num
+
+	def reset(self):
+		self.stage = 0
 		self.round = 0
 		self.getRandBtns()
-		self.run = True
 
 	def getRandBtns(self):
 		desk.leds(False)
@@ -243,6 +258,7 @@ class Game:
 			i.led(True)
 
 	def netClick(self, btn):
+		print('NET '+btn.pos + str(btn.num))
 		if btn not in self.btns:
 			self.round = 0
 			self.getRandBtns()
@@ -252,20 +268,18 @@ class Game:
 			if len(self.btns) == 0:
 				self.nextRound()
 
-	def _nextStage(self):
-		self.stage += 1
-		print('next stage: ' + str(self.stage))
+	def endStage(self):
+		geturl('http://%s:3000/event_1?param_1=%i&param_2=&param_3=&param_4=' % (self.server, self.stage))
 		self.round = 0
-		self.getRandBtns()
+		self.stage = 0
 
 	def nextRound(self):
-		self.round += 1
-
 		if self.round > 3:
-			self._nextStage()
+			self.endStage()
 		else:
-			print('next round: ' + str(self.round))
+			self.round += 1
 			self.getRandBtns()
+			print('next round: ' + str(self.round))
 
 	def resetRound(self):
 		print('reset round')
@@ -274,10 +288,10 @@ class Game:
 
 	def clicked(self, btn):
 		print(btn.pos + str(btn.num))
-		
-		if not self.run:
+
+		if self.stage == 0:
 			return
-			
+
 		if self.stage <= 2:
 			if btn not in self.btns:
 				self.resetRound()
@@ -286,43 +300,30 @@ class Game:
 				if self.btns[0].clicked and self.btns[1].clicked:
 					self.nextRound()
 		else:
-			if self.stage == 4:
-				a = list([LANCAM[-(i + 1)] for i in range(len(LANCAM))])
-			else:
-				a = list(LANCAM)
+			a = list(LANCAM)
 
-			if btn.pos == 'left':
+			if btn.pos == 'L':
 				net = a[0].net
-			else:
+			elif btn.pos == 'R':
 				net = a[1].net
+
 			url = 'http://' + str(net['ip']) + ':' + str(net['port']) + '/' + str(btn) + '.btn'
-			url = urllib.urlopen(url)
-			a = url.getcode()
-			print(str(url)+' '+str(a))
-			url.close()
-
-
-game = Game()
+			geturl(url)
 
 
 def createFrame():
 	frames = list()
-	if game.stage == 0:
+
+	if game.stage == 1:
 		frames = getImg(cam)
-	elif game.stage == 1:
-		a = list([cam[-(i + 1)] for i in range(len(cam))])
-		frames = getImg(a)
 	elif game.stage == 2:
-		for i in LANCAM:
-			if i.stopped:
-				i.start()
-		frames = getImg(LANCAM)
+		a = cam[::-1]
+		frames = getImg(a)
 	elif game.stage == 3:
 		for i in LANCAM:
 			if i.stopped:
 				i.start()
-		a = list([LANCAM[-(i + 1)] for i in range(len(LANCAM))])
-		frames = getImg(a)
+		frames = getImg(LANCAM)
 
 	frame = comp(*frames)
 	return frame
@@ -367,6 +368,8 @@ def get_ip_address(ifname):
 		addr = None
 	return addr
 
+cam = list([VideoStream(0).start(), VideoStream(1).start()])
+game = Game()
 
 if __name__ == '__main__':
 	ip = get_ip_address('wlan0' if machine() == 'armv7l' else 'wlp3s0')
@@ -375,7 +378,10 @@ if __name__ == '__main__':
 
 	if FULLSCREEN:
 		namedWindow(WindowName, cv2.WND_PROP_FULLSCREEN)
-		setWindowProperty(WindowName, cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
+		if cv2.__version__.startswith('2.'):
+			setWindowProperty(WindowName, cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
+		if cv2.__version__.startswith('3.'):
+			setWindowProperty(WindowName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
 	th = Thread(target=window, args=(cam)).start()
 	th1 = Thread(target=serve, args=()).start()
