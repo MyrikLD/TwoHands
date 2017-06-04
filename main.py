@@ -375,6 +375,7 @@ if __name__ == '__main__':
 	ip = get_ip_address('eth0' if machine() == 'armv7l' else 'wlp3s0')
 	WindowName = str(ip)
 	other = settings.get(ip, [])
+	print('my addr: %s\nother: %s'%(ip,other))
 
 	if FULLSCREEN:
 		namedWindow(WindowName, cv2.WND_PROP_FULLSCREEN)
@@ -391,4 +392,4 @@ if __name__ == '__main__':
 	for i in other:
 		d = VideoStream('http://%s:5000/%s.mjpg' % (i[0], i[1]))
 		LANCAM.append(d)
-	print(other)
+	
