@@ -59,7 +59,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			name, end = name.split('.')
 
 		if name == 'execute_1':
-			game.server = server
+			game.setServer(server)
 			param_1 = int(args.get('param_1', ''))
 			game.start(param_1)
 			self.send_response(200)
@@ -72,6 +72,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			game.netClick(desk.get(name))
 
 		if name == '0':
+			game.setServer(server)
 			self.send_response(200)
 			self.send_header('Content-type', 'application/json')
 			self.end_headers()
@@ -246,6 +247,11 @@ class Game:
 		self.reset()
 		Button.callback = self.clicked
 
+	def setServer(self, s):
+		if self.server != s:
+			self.server = s
+			print('New server: ' + str(s))
+
 	def start(self, num):
 		self.getRandBtns()
 		self.round = 0
@@ -267,24 +273,13 @@ class Game:
 		for i in self.btns:
 			i.led(True)
 
-	def netClick(self, btn):
-		print('NET ' + btn.pos + str(btn.num))
-		if btn not in self.btns:
-			self.round = 0
-			self.getRandBtns()
-		else:
-			btn.led(False)
-			self.btns.remove(btn)
-			if len(self.btns) == 0:
-				self.nextRound()
-
 	def endStage(self):
-		geturl('http://%s:3000/event_1?param_1=%i' % (self.server, self.stage))
+		geturl('http://%s:3000/events/0/event_1?param_1=%i' % (self.server, self.stage))
 		self.round = 0
 		self.stage = 0
 
 	def nextRound(self):
-		if self.round > 3:
+		if self.round >= 3:
 			self.endStage()
 		else:
 			self.round += 1
@@ -295,6 +290,17 @@ class Game:
 		print('reset round')
 		self.round = 0
 		self.getRandBtns()
+
+	def netClick(self, btn):
+		print('NET ' + btn.pos + str(btn.num))
+		if btn not in self.btns:
+			self.round = 0
+			self.getRandBtns()
+		else:
+			btn.led(False)
+			self.btns.remove(btn)
+			if len(self.btns) == 0:
+				self.nextRound()
 
 	def clicked(self, btn):
 		print('click: ' + str(btn.pos) + str(btn.num))
@@ -365,7 +371,7 @@ def window(*cam):
 def serve():
 	CamHandler.streams = cam
 	server = ThreadedHTTPServer(('', settings['port']), CamHandler)
-	print("server started")
+	print("Server started")
 	server.serve_forever()
 
 
@@ -387,8 +393,8 @@ if __name__ == '__main__':
 	WindowName = str(ip)
 	other = settings.get(ip, [])
 	print('OpenCV: %s' % cv2.__version__)
-	print('my addr: %s' % ip)
-	print('other: %s' % other)
+	print('My addr: %s' % ip)
+	print('Other: %s' % other)
 	cam = list([VideoStream(0).start(), VideoStream(1).start()])
 	print('Cam created')
 
