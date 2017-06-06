@@ -87,7 +87,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.send_response(200)
 			self.send_header('Content-type', 'application/json')
 			self.end_headers()
-			self.wfile.write('{state_string_1: "idi_nahuy",state_string_2:"",state_string_3:"",state_string_4:"",state_int_1:0,state_int_2:0,state_int_3:0,state_int_4:0}')
+			self.wfile.write('{state_int_1: %i, state_int_2: %i}' % (game.stage, game.round))
 
 		if end == 'mjpg':
 			self.send_response(200)
@@ -137,8 +137,10 @@ class VideoStream:
 	def __init__(self, src=0):
 		if type(src) == int:
 			self.src = src
-			print('Creating camera %s'%src)
+			print('Creating camera %s' % src)
 			self.stream = cv2.VideoCapture(src)
+			self.stream.set(3, 320)
+			self.stream.set(4, 240)
 			try:
 				self.grabbed, self.frame = self.stream.read()
 			except Exception as e:
@@ -289,7 +291,7 @@ class Game:
 				self.nextRound()
 
 	def endStage(self):
-		geturl('http://%s:8080/event_1?param_1=%i&param_2=&param_3=&param_4=' % (self.server, self.stage))
+		geturl('http://%s:8080/event_1?param_1=%i' % (self.server, self.stage))
 		self.round = 0
 		self.stage = 0
 
