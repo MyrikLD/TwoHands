@@ -1,6 +1,7 @@
 import fcntl
 import json
 import random
+import re
 import socket
 import struct
 import urllib
@@ -9,7 +10,6 @@ from SocketServer import ThreadingMixIn
 from cv2 import imshow, namedWindow, setWindowProperty
 from platform import machine
 from threading import Thread
-import re
 
 import cv2
 import numpy as np
@@ -24,12 +24,14 @@ FULLSCREEN = True
 with open('settings.json') as json_data:
 	settings = json.load(json_data)
 
+
 def geturl(url):
 	url = urllib.urlopen(url)
 	ret = url.getcode()
 	print(str(url) + ' ' + str(ret))
 	url.close()
 	return ret
+
 
 class CamHandler(BaseHTTPRequestHandler):
 	streams = None
@@ -55,20 +57,6 @@ class CamHandler(BaseHTTPRequestHandler):
 			args = ar
 		if '.' in name:
 			name, end = name.split('.')
-
-		if name == 'execute_2':
-			game.server = server
-			game.reset(False)
-			param_1 = args.get('param_1', '')
-			if param_1 == 'on':
-				desk.leds(True)
-			elif param_1 == 'off':
-				desk.leds(False)
-			self.send_response(200)
-			self.send_header('Content-type', 'application/json')
-			self.end_headers()
-			self.wfile.write('{success: 1}')
-
 
 		if name == 'execute_1':
 			game.server = server
@@ -144,7 +132,7 @@ class VideoStream:
 			try:
 				self.grabbed, self.frame = self.stream.read()
 			except Exception as e:
-				print('Camera %s error: %s'%(self.src, e))
+				print('Camera %s error: %s' % (self.src, e))
 			self.stopped = False
 			self.th = Thread(target=self.update, args=()).start()
 		else:
@@ -193,7 +181,7 @@ class VideoStream:
 				try:
 					(self.grabbed, self.frame) = self.stream.read()
 				except Exception as e:
-					print('Camera %s error: %s'%(self.src, e))
+					print('Camera %s error: %s' % (self.src, e))
 
 	def read(self):
 		self.pause()
@@ -280,7 +268,7 @@ class Game:
 			i.led(True)
 
 	def netClick(self, btn):
-		print('NET '+btn.pos + str(btn.num))
+		print('NET ' + btn.pos + str(btn.num))
 		if btn not in self.btns:
 			self.round = 0
 			self.getRandBtns()
@@ -291,7 +279,7 @@ class Game:
 				self.nextRound()
 
 	def endStage(self):
-		geturl('http://%s:8080/event_1?param_1=%i' % (self.server, self.stage))
+		geturl('http://%s:3000/event_1?param_1=%i' % (self.server, self.stage))
 		self.round = 0
 		self.stage = 0
 
@@ -309,7 +297,7 @@ class Game:
 		self.getRandBtns()
 
 	def clicked(self, btn):
-		print(btn.pos + str(btn.num))
+		print('click: ' + str(btn.pos) + str(btn.num))
 
 		if self.stage == 0:
 			return
@@ -390,6 +378,7 @@ def get_ip_address(ifname):
 		addr = None
 	return addr
 
+
 cam = list()
 game = Game()
 
@@ -397,9 +386,9 @@ if __name__ == '__main__':
 	ip = get_ip_address('eth0' if machine() == 'armv7l' else 'wlp3s0')
 	WindowName = str(ip)
 	other = settings.get(ip, [])
-	print('OpenCV: %s'%cv2.__version__)
-	print('my addr: %s'%ip)
-	print('other: %s'%other)
+	print('OpenCV: %s' % cv2.__version__)
+	print('my addr: %s' % ip)
+	print('other: %s' % other)
 	cam = list([VideoStream(0).start(), VideoStream(1).start()])
 	print('Cam created')
 
@@ -410,12 +399,11 @@ if __name__ == '__main__':
 		if cv2.__version__.startswith('3.'):
 			setWindowProperty(WindowName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-	
 	th = Thread(target=window, args=(cam)).start()
 	th1 = Thread(target=serve, args=()).start()
 
 	LANCAM = list()
 	for i in other:
-		d = VideoStream('http://%s:5000/%s.mjpg' % (i[0], i[1]))
+		url = 'http://' + str(i[0]) + ':' + str(net['port']) + '/' + str(i[1]) + '.mjpg'
+		d = VideoStream(url)
 		LANCAM.append(d)
-	
