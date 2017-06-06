@@ -87,7 +87,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.send_response(200)
 			self.send_header('Content-type', 'application/json')
 			self.end_headers()
-			self.wfile.write('{state_string_1: "idi_nahuy"}')
+			self.wfile.write('{state_string_1: "idi_nahuy",state_string_2:"",state_string_3:"",state_string_4:"",state_int_1:0,state_int_2:0,state_int_3:0,state_int_4:0}')
 
 		if end == 'mjpg':
 			self.send_response(200)
