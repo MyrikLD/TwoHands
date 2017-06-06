@@ -64,15 +64,30 @@ class CamHandler(BaseHTTPRequestHandler):
 				desk.leds(True)
 			elif param_1 == 'off':
 				desk.leds(False)
+			self.send_response(200)
+			self.send_header('Content-type', 'application/json')
+			self.end_headers()
+			self.wfile.write('{success: 1}')
+
 
 		if name == 'execute_1':
 			game.server = server
 			param_1 = int(args.get('param_1', ''))
 			game.start(param_1)
+			self.send_response(200)
+			self.send_header('Content-type', 'application/json')
+			self.end_headers()
+			self.wfile.write('{success: 1}')
 
 		if end == 'btn':
 			self.send_response(200)
 			game.netClick(desk.get(name))
+
+		if name == '0':
+			self.send_response(200)
+			self.send_header('Content-type', 'application/json')
+			self.end_headers()
+			self.wfile.write('{state_string_1: "idi_nahuy"}')
 
 		if end == 'mjpg':
 			self.send_response(200)
@@ -274,7 +289,7 @@ class Game:
 				self.nextRound()
 
 	def endStage(self):
-		geturl('http://%s:3000/event_1?param_1=%i&param_2=&param_3=&param_4=' % (self.server, self.stage))
+		geturl('http://%s:8080/event_1?param_1=%i&param_2=&param_3=&param_4=' % (self.server, self.stage))
 		self.round = 0
 		self.stage = 0
 
