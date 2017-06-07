@@ -20,15 +20,21 @@ STAGE = 0
 LANCAM = list()
 WindowName = 'Term'
 FULLSCREEN = True
+__version__ = 0.1
 
 with open('settings.json') as json_data:
 	settings = json.load(json_data)
 
 
 def geturl(url):
-	url = urllib.urlopen(url)
+	print(url)
+	try:
+		url = urllib.urlopen(url)
+	except Exception as e:
+		print(e)
+		return e
 	ret = url.getcode()
-	print(str(url) + ' ' + str(ret))
+	print('Ret: ' + str(ret))
 	url.close()
 	return ret
 
@@ -392,6 +398,7 @@ if __name__ == '__main__':
 	ip = get_ip_address('eth0' if machine() == 'armv7l' else 'wlp3s0')
 	WindowName = str(ip)
 	other = settings.get(ip, [])
+	print('twoHands: %s' % __version__)
 	print('OpenCV: %s' % cv2.__version__)
 	print('My addr: %s' % ip)
 	print('Other: %s' % other)
