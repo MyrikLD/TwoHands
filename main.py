@@ -417,6 +417,6 @@ if __name__ == '__main__':
 
 	LANCAM = list()
 	for i in other:
-		url = 'http://' + str(i[0]) + ':' + str(net['port']) + '/' + str(i[1]) + '.mjpg'
+		url = 'http://' + str(i[0]) + ':' + str(settings['port']) + '/' + str(i[1]) + '.mjpg'
 		d = VideoStream(url)
 		LANCAM.append(d)
