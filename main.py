@@ -20,7 +20,7 @@ STAGE = 0
 LANCAM = list()
 WindowName = 'Term'
 FULLSCREEN = True
-__version__ = 0.1
+__version__ = 0.2
 
 with open('settings.json') as json_data:
 	settings = json.load(json_data)
@@ -419,4 +419,6 @@ if __name__ == '__main__':
 	for i in other:
 		url = 'http://' + str(i[0]) + ':' + str(settings['port']) + '/' + str(i[1]) + '.mjpg'
 		d = VideoStream(url)
+		print('NetCam created: '+url)
 		LANCAM.append(d)
+
