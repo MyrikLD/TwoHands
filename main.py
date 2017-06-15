@@ -84,7 +84,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.send_response(200)
 			game.netClick(desk.get(name))
 
-		if name == '0':
+		if name == '0' and end == '':
 			game.setServer(server)
 			self.send_response(200)
 			self.send_header('Content-type', 'application/json')
