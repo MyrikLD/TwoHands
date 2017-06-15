@@ -76,7 +76,7 @@ class Button:
 		print(btn)
 
 	def __str__(self):
-		return '%s%s' % (self.pos, self.btnPin)
+		return '%s%s' % (self.pos, self.num)
 		#return 'Btn: %s | Led: %s' % (self.btnPin, self.ledPin)
 
 	def __del__(self):
