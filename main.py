@@ -171,7 +171,6 @@ class VideoStream:
 				if self.paused:
 					continue
 
-
 				data += stream.read(1)
 				a = data.find(b'--')
 				b = data.find(b'\r\n\r\n')
@@ -354,8 +353,7 @@ def createFrame():
 		frames = getImg(a)
 	elif game.stage == 3:
 		for i in LANCAM:
-			if i.stopped:
-				i.stopped = False
+			if i.paused:
 				i.start()
 		frames = getImg(LANCAM)
 
