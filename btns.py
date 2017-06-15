@@ -106,6 +106,7 @@ class Desk:
 			return self.L[num]
 		if pos == 'R':
 			return self.R[num]
+		print('Not button: '+str(s))
 		return None
 
 
