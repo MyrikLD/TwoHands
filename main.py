@@ -42,6 +42,9 @@ def geturl(url):
 class CamHandler(BaseHTTPRequestHandler):
 	streams = None
 
+	def log_message(self, format, *args):
+		print(format)
+
 	def do_GET(self):
 		path = self.path.split('/')[1:]
 		data = path[-1]
@@ -314,14 +317,14 @@ class Game:
 		if self.stage == 0:
 			return
 
-		if self.stage <= 2:
+		elif self.stage in [1,2]:
 			if btn not in self.btns:
 				self.resetRound()
 			else:
 				btn.led(False)
 				if self.btns[0].clicked and self.btns[1].clicked:
 					self.nextRound()
-		else:
+		elif self.stage == 3:
 			a = list(LANCAM)
 
 			if btn.pos == 'L':
