@@ -43,7 +43,7 @@ class CamHandler(BaseHTTPRequestHandler):
 	streams = None
 
 	def log_message(self, format, *args):
-		print(format)
+		print(args)
 
 	def do_GET(self):
 		path = self.path.split('/')[1:]
