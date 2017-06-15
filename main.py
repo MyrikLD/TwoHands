@@ -148,11 +148,13 @@ class VideoStream:
 			except Exception as e:
 				print('Camera %s error: %s' % (self.src, e))
 			self.stopped = False
-			self.th = Thread(target=self.update, args=()).start()
 		else:
 			pattern = r"^http:\/\/(?P<ip>[0-9.]+):(?P<port>[0-9]+)\/(?P<fn>.+)\.(?P<ft>.+)$"
 			self.net = re.search(pattern, src).groupdict()
 			self.src = str(src)
+			self.stopped = False
+			self.paused = True
+		self.th = Thread(target=self.update, args=()).start()
 
 	def update(self):
 		if type(self.src) == str:
@@ -168,6 +170,7 @@ class VideoStream:
 					return
 				if self.paused:
 					continue
+
 
 				data += stream.read(1)
 				a = data.find(b'--')
@@ -222,7 +225,8 @@ class VideoStream:
 
 def getImg(c):
 	for i in c:
-		yield i.read()
+		d = i.read()
+		yield d
 
 
 def comp(*img):
@@ -351,6 +355,7 @@ def createFrame():
 	elif game.stage == 3:
 		for i in LANCAM:
 			if i.stopped:
+				i.stopped = False
 				i.start()
 		frames = getImg(LANCAM)
 
