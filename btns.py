@@ -3,7 +3,7 @@ try:
 
 	GPIO.setmode(GPIO.BCM)
 	GPIO.setwarnings(False)
-except RuntimeError:
+except ImportError:
 	class gpio:
 		PUD_DOWN = 1
 		PUD_UP = 2
@@ -71,16 +71,17 @@ class Button:
 			self.lp = time()
 			self.callback(self)
 
-	def callback(self, btn):    
-		#print(self.pol + str(self.num))
+	def callback(self, btn):
+		# print(self.pol + str(self.num))
 		print(btn)
 
 	def __str__(self):
+		# return 'Btn: %s | Led: %s' % (self.btnPin, self.ledPin)
 		return '%s%s' % (self.pos, self.num)
-		#return 'Btn: %s | Led: %s' % (self.btnPin, self.ledPin)
 
 	def __del__(self):
-		GPIO.remove_event_detect(self.btnPin)
+		if GPIO is not None:
+			GPIO.remove_event_detect(self.btnPin)
 
 
 class Desk:
@@ -106,7 +107,7 @@ class Desk:
 			return self.L[num]
 		if pos == 'R':
 			return self.R[num]
-		print('Not button: '+str(s))
+		print('Not button: ' + str(s))
 		return None
 
 
@@ -142,7 +143,6 @@ def test1():
 	print("All")
 	desk.leds(True)
 	input()
-	
 
 
 def test2():

@@ -20,7 +20,7 @@ STAGE = 0
 LANCAM = list()
 WindowName = 'Term'
 FULLSCREEN = True
-__version__ = 0.2
+__version__ = 0.3
 RUN = True
 
 with open('settings.json') as json_data:
@@ -369,6 +369,7 @@ def createFrame():
 
 def window(*cam):
 	global STAGE
+	global RUN
 
 	while RUN:
 		frame = createFrame()
@@ -379,6 +380,7 @@ def window(*cam):
 		key = cv2.waitKey(1)
 
 		if key & 0xFF == 27:
+			RUN = False
 			break
 
 		if key & 0xFF == 32:
@@ -442,7 +444,9 @@ if __name__ == '__main__':
 		print('NetCam created: ' + url)
 		LANCAM.append(d)
 
+	while (RUN):
+		pass
+	print('Exit')
 	server.shutdown()
-	RUN = False
 	th1.join(1)
 	th.join(1)
