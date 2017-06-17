@@ -21,6 +21,7 @@ LANCAM = list()
 WindowName = 'Term'
 FULLSCREEN = True
 __version__ = 0.2
+RUN = True
 
 with open('settings.json') as json_data:
 	settings = json.load(json_data)
@@ -95,7 +96,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.send_response(200)
 			self.send_header('Content-type', 'multipart/x-mixed-replace; boundary=--jpgboundary')
 			self.end_headers()
-			while True:
+			while RUN:
 				try:
 					num = int(name)
 					img = self.streams[num].read()
@@ -165,15 +166,20 @@ class VideoStream:
 				except Exception as e:
 					print(self.src + ': ' + str(e))
 			data = bytes()
-			while True:
+			while RUN:
 				if self.stopped:
 					return
 				if self.paused:
 					continue
 
 				data += stream.read(1)
-				a = data.find(b'--')
+
 				b = data.find(b'\r\n\r\n')
+
+				if b == -1:
+					continue
+
+				a = data.find(b'--')
 
 				if a != -1 and b != -1:
 					head = data[a:b].split('\r\n')
@@ -189,7 +195,7 @@ class VideoStream:
 					self.frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
 
 		else:
-			while True:
+			while RUN:
 				if self.stopped:
 					return
 				if self.paused:
@@ -324,7 +330,7 @@ class Game:
 		if self.stage == 0:
 			return
 
-		elif self.stage in [1,2]:
+		elif self.stage in [1, 2]:
 			if btn not in self.btns:
 				self.resetRound()
 			else:
@@ -364,7 +370,7 @@ def createFrame():
 def window(*cam):
 	global STAGE
 
-	while (True):
+	while RUN:
 		frame = createFrame()
 
 		if frame is not None:
@@ -385,6 +391,7 @@ def window(*cam):
 
 
 def serve():
+	global server
 	CamHandler.streams = cam
 	server = ThreadedHTTPServer(('', settings['port']), CamHandler)
 	print("Server started")
@@ -403,6 +410,7 @@ def get_ip_address(ifname):
 
 cam = list()
 game = Game()
+server = None
 
 if __name__ == '__main__':
 	ip = get_ip_address('eth0' if machine() == 'armv7l' else 'wlp3s0')
@@ -422,13 +430,19 @@ if __name__ == '__main__':
 		if cv2.__version__.startswith('3.'):
 			setWindowProperty(WindowName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-	th = Thread(target=window, args=(cam)).start()
-	th1 = Thread(target=serve, args=()).start()
+	th = Thread(target=window, args=(cam))
+	th.start()
+	th1 = Thread(target=serve, args=())
+	th1.start()
 
 	LANCAM = list()
 	for i in other:
 		url = 'http://' + str(i[0]) + ':' + str(settings['port']) + '/' + str(i[1]) + '.mjpg'
 		d = VideoStream(url)
-		print('NetCam created: '+url)
+		print('NetCam created: ' + url)
 		LANCAM.append(d)
 
+	server.shutdown()
+	RUN = False
+	th1.join(1)
+	th.join(1)
