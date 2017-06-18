@@ -81,10 +81,6 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.end_headers()
 			self.wfile.write('{success: 1}')
 
-		if end == 'btn':
-			self.send_response(200)
-			game.netClick(desk.get(name))
-
 		if name == '0' and end == '':
 			game.setServer(server)
 			self.send_response(200)
@@ -315,17 +311,6 @@ class Game:
 		self.round = 0
 		self.getRandBtns()
 
-	def netClick(self, btn):
-		print('NET ' + btn.pos + str(btn.num))
-		if btn not in self.btns:
-			self.round = 0
-			self.getRandBtns()
-		else:
-			btn.led(False)
-			self.btns.remove(btn)
-			if len(self.btns) == 0:
-				self.nextRound()
-
 	def clicked(self, btn):
 		print('click: ' + str(btn.pos) + str(btn.num))
 
@@ -339,16 +324,6 @@ class Game:
 				btn.led(False)
 				if self.btns[0].clicked and self.btns[1].clicked:
 					self.nextRound()
-		elif self.stage == 9:
-			a = list(LANCAM)
-
-			if btn.pos == 'L':
-				net = a[0].net
-			elif btn.pos == 'R':
-				net = a[1].net
-
-			url = 'http://' + str(net['ip']) + ':' + str(net['port']) + '/' + str(btn) + '.btn'
-			geturl(url)
 
 
 def createFrame():
