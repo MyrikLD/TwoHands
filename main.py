@@ -199,13 +199,13 @@ class VideoStream:
 					continue
 				try:
 					self.grabbed = self.stream.grab()
-					#self.frame = self.stream.retrieve()
+					self.frame = self.stream.retrieve()
 				except Exception as e:
 					print('Camera %s error: %s' % (self.src, e))
 
 	def read(self):
 		self.pause()
-		img = self.stream.retrieve()
+		img = self.frame
 		self.start()
 		return img
 
