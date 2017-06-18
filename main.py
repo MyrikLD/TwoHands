@@ -332,14 +332,14 @@ class Game:
 		if self.stage == 0:
 			return
 
-		elif self.stage in [1, 2]:
+		elif self.stage in [1, 2, 3]:
 			if btn not in self.btns:
 				self.resetRound()
 			else:
 				btn.led(False)
 				if self.btns[0].clicked and self.btns[1].clicked:
 					self.nextRound()
-		elif self.stage == 3:
+		elif self.stage == 9:
 			a = list(LANCAM)
 
 			if btn.pos == 'L':
