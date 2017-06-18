@@ -138,14 +138,15 @@ class VideoStream:
 	net = None
 
 	def __init__(self, src=0):
-		if type(src) == int:
+		if type(src) == int or not src.startswith('http:'):
 			self.src = src
 			print('Creating camera %s' % src)
 			self.stream = cv2.VideoCapture(src)
 			self.stream.set(3, 320)
 			self.stream.set(4, 240)
 			try:
-				self.grabbed, self.frame = self.stream.read()
+				#self.grabbed, self.frame = self.stream.read()
+				self.grabbed = self.stream.grab()
 			except Exception as e:
 				print('Camera %s error: %s' % (self.src, e))
 			self.stopped = False
@@ -201,7 +202,8 @@ class VideoStream:
 				if self.paused:
 					continue
 				try:
-					(self.grabbed, self.frame) = self.stream.read()
+					self.grabbed = self.stream.grab()
+					self.frame = self.stream.retrieve()
 				except Exception as e:
 					print('Camera %s error: %s' % (self.src, e))
 
