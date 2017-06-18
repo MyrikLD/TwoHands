@@ -138,7 +138,7 @@ class VideoStream:
 	net = None
 
 	def __init__(self, src=0):
-		if type(src) == int or not src.startswith('http:'):
+		if type(src) == int:
 			self.src = src
 			print('Creating camera %s' % src)
 			self.stream = cv2.VideoCapture(src)
