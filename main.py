@@ -10,6 +10,7 @@ from SocketServer import ThreadingMixIn
 from cv2 import imshow, namedWindow, setWindowProperty
 from platform import machine
 from threading import Thread
+from time import sleep
 
 import cv2
 import numpy as np
@@ -69,6 +70,7 @@ class CamHandler(BaseHTTPRequestHandler):
 				else:
 					ar.update({r[0]: str()})
 			args = ar
+
 		if '.' in name:
 			name, end = name.split('.')
 
@@ -100,12 +102,14 @@ class CamHandler(BaseHTTPRequestHandler):
 						img = cv2.imencode(".png", img)[1].tostring()
 					else:
 						continue
-
-					self.wfile.write('--jpgboundary\r\n')
-					self.send_header('Content-type', 'image/jpeg')
-					self.send_header('Content-length', str(len(img)))
-					self.end_headers()
-					self.wfile.write(img)
+					try:
+						self.wfile.write('--jpgboundary\r\n')
+						self.send_header('Content-type', 'image/jpeg')
+						self.send_header('Content-length', str(len(img)))
+						self.end_headers()
+						self.wfile.write(img)
+					except Exception:
+						break
 				except KeyboardInterrupt:
 					break
 			return
@@ -141,7 +145,7 @@ class VideoStream:
 			self.stream.set(3, 320)
 			self.stream.set(4, 240)
 			try:
-				#self.grabbed, self.frame = self.stream.read()
+				# self.grabbed, self.frame = self.stream.read()
 				self.grabbed = self.stream.grab()
 			except Exception as e:
 				print('Camera %s error: %s' % (self.src, e))
@@ -161,6 +165,7 @@ class VideoStream:
 				stream = urllib.urlopen(self.src)
 			except Exception as e:
 				print(self.src + ': ' + str(e))
+				sleep(1)
 		return stream
 
 	def update(self):
