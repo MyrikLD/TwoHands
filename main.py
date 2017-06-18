@@ -154,14 +154,19 @@ class VideoStream:
 			self.paused = True
 		self.th = Thread(target=self.update, args=()).start()
 
+	def netconn(self):
+		stream = None
+		while stream is None:
+			try:
+				stream = urllib.urlopen(self.src)
+			except Exception as e:
+				print(self.src + ': ' + str(e))
+		return stream
+
 	def update(self):
 		if type(self.src) == str:
-			stream = None
-			while stream is None:
-				try:
-					stream = urllib.urlopen(self.src)
-				except Exception as e:
-					print(self.src + ': ' + str(e))
+			stream = self.netconn()
+
 			data = bytes()
 			while RUN:
 				if self.stopped:
@@ -169,7 +174,10 @@ class VideoStream:
 				if self.paused:
 					continue
 
-				data += stream.read(1)
+				try:
+					data += stream.read(1)
+				except Exception as e:
+					stream = self.netconn()
 
 				b = data.find(b'\r\n\r\n')
 
@@ -187,7 +195,10 @@ class VideoStream:
 					jpg = bytes()
 					data = bytes()
 					while len(jpg) < l:
-						jpg += stream.read(l - len(jpg))
+						try:
+							jpg += stream.read(l - len(jpg))
+						except Exception as e:
+							stream = self.netconn()
 
 					self.frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
 
