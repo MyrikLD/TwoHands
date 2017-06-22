@@ -21,8 +21,9 @@ STAGE = 0
 LANCAM = list()
 WindowName = 'Term'
 FULLSCREEN = True
-__version__ = 0.3
 RUN = True
+__version__ = 0.4
+
 
 with open('settings.json') as json_data:
 	settings = json.load(json_data)
@@ -91,9 +92,12 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.wfile.write('{state_int_1: %i, state_int_2: %i}' % (game.stage, game.round))
 
 		if end == 'mjpg':
-			self.send_response(200)
-			self.send_header('Content-type', 'multipart/x-mixed-replace; boundary=--jpgboundary')
-			self.end_headers()
+			try:
+				self.send_response(200)
+				self.send_header('Content-type', 'multipart/x-mixed-replace; boundary=--jpgboundary')
+				self.end_headers()
+			except Exception:
+				return
 			while RUN:
 				try:
 					num = int(name)
@@ -182,7 +186,9 @@ class VideoStream:
 				try:
 					data += stream.read(1)
 				except Exception as e:
+					data = bytes()
 					stream = self.netconn()
+					continue
 
 				b = data.find(b'\r\n\r\n')
 
