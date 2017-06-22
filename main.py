@@ -22,7 +22,7 @@ LANCAM = list()
 WindowName = 'Term'
 FULLSCREEN = True
 RUN = True
-__version__ = 0.4
+__version__ = 0.5
 
 
 with open('settings.json') as json_data:
@@ -95,10 +95,12 @@ class CamHandler(BaseHTTPRequestHandler):
 			try:
 				self.send_response(200)
 				self.send_header('Content-type', 'multipart/x-mixed-replace; boundary=--jpgboundary')
+				self.send_header('Connection', 'keep-alive')
 				self.end_headers()
+				self.close_connection = False
 			except Exception:
 				return
-			while RUN:
+			while RUN and self.connection._sock != None:
 				try:
 					num = int(name)
 					img = self.streams[num].read()
@@ -107,12 +109,23 @@ class CamHandler(BaseHTTPRequestHandler):
 					else:
 						continue
 					try:
+						data = b'--jpgboundary\r\n'
+						data += b'Content-type: image/jpeg\r\n'
+						data += b'Content-length: %i\r\n' % len(img)
+						data += b'\r\n'
+						data += img
+						data += b'\r\n'
+						self.connection._sock.send(data)
+
+						'''
 						self.wfile.write('--jpgboundary\r\n')
 						self.send_header('Content-type', 'image/jpeg')
 						self.send_header('Content-length', str(len(img)))
 						self.end_headers()
 						self.wfile.write(img)
-					except Exception:
+						'''
+
+					except Exception as e:
 						break
 				except KeyboardInterrupt:
 					break
@@ -186,7 +199,9 @@ class VideoStream:
 				try:
 					data += stream.read(1)
 				except Exception as e:
+					print(e)
 					data = bytes()
+					stream.close()
 					stream = self.netconn()
 					continue
 
@@ -209,6 +224,7 @@ class VideoStream:
 						try:
 							jpg += stream.read(l - len(jpg))
 						except Exception as e:
+							stream.close()
 							stream = self.netconn()
 
 					self.frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
@@ -226,9 +242,9 @@ class VideoStream:
 					print('Camera %s error: %s' % (self.src, e))
 
 	def read(self):
-		self.pause()
+		#self.pause()
 		img = self.frame
-		self.start()
+		#self.start()
 		return img
 
 	def pause(self):
@@ -257,8 +273,7 @@ def getImg(c):
 def comp(*img):
 	img = list(img)
 
-	for i in range(len(img)):
-		if None in img:
+	while any(i is None for i in img):
 			img.remove(None)
 
 	if len(img) == 0:
