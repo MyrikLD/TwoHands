@@ -30,14 +30,15 @@ with open('settings.json') as json_data:
 
 
 def geturl(url):
-	print(url)
+	print("GET: "%url)
 	try:
 		url = urllib.urlopen(url)
 	except Exception as e:
 		print(e)
 		return e
 	ret = url.getcode()
-	print('Ret: ' + str(ret))
+	if ret != 200:
+		print('RET: ' + str(ret))
 	url.close()
 	return ret
 
@@ -116,15 +117,6 @@ class CamHandler(BaseHTTPRequestHandler):
 						data += img
 						data += b'\r\n'
 						self.connection._sock.send(data)
-
-						'''
-						self.wfile.write('--jpgboundary\r\n')
-						self.send_header('Content-type', 'image/jpeg')
-						self.send_header('Content-length', str(len(img)))
-						self.end_headers()
-						self.wfile.write(img)
-						'''
-
 					except Exception as e:
 						break
 				except KeyboardInterrupt:
@@ -337,7 +329,8 @@ class Game:
 
 	def nextRound(self):
 		if self.round >= 3:
-			self.endStage()
+			if self.stage != 3:
+				self.endStage()
 		else:
 			self.round += 1
 			self.getRandBtns()
