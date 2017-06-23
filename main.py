@@ -324,17 +324,14 @@ class Game:
 
 	def endStage(self):
 		geturl('http://%s:3000/events/0/event_1?param_1=%i' % (self.server, self.stage))
-		self.round = 0
-		self.stage = 0
+		if self.stage != 3:
+			self.round = 0
+			self.stage = 0
 
 	def nextRound(self):
-		if self.stage == 1 and self.round > 3:
+		endRound = {1:3, 2:2, 3:1}
+		if self.round == endRound[self.stage]:
 			self.endStage()
-			return
-		elif self.stage == 2 and self.round > 2:
-			self.endStage()
-			return
-		elif self.stage == 3 and self.round > 1:
 			return
 		else:
 			self.round += 1
