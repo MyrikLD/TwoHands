@@ -97,7 +97,6 @@ class CamHandler(BaseHTTPRequestHandler):
 				self.send_header('Content-type', 'multipart/x-mixed-replace; boundary=--jpgboundary')
 				self.send_header('Connection', 'keep-alive')
 				self.end_headers()
-				self.close_connection = False
 			except Exception:
 				return
 			while RUN and self.connection._sock != None:
@@ -322,8 +321,8 @@ class Game:
 			i.led(True)
 
 	def endStage(self):
-		geturl('http://%s:3000/events/0/event_1?param_1=%i' % (self.server, self.stage))
 		print('End stage: ' + str(self.stage))
+		geturl('http://%s:3000/events/0/event_1?param_1=%i' % (self.server, self.stage))
 		if self.stage != 3:
 			self.round = 0
 			self.stage = 0
