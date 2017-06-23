@@ -328,13 +328,13 @@ class Game:
 		self.stage = 0
 
 	def nextRound(self):
-		if self.stage == 1 and self.round > 8:
+		if self.stage == 1 and self.round > 4:
 			self.endStage()
 			return
-		elif self.stage == 2 and self.round > 6:
+		elif self.stage == 2 and self.round > 3:
 			self.endStage()
 			return
-		elif self.stage == 3 and self.round > 4:
+		elif self.stage == 3 and self.round > 2:
 			return
 		else:
 			self.round += 1
