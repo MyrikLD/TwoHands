@@ -24,13 +24,12 @@ FULLSCREEN = True
 RUN = True
 __version__ = 0.5
 
-
 with open('settings.json') as json_data:
 	settings = json.load(json_data)
 
 
 def geturl(url):
-	print("GET: "%url)
+	print("SEND: " % url)
 	try:
 		url = urllib.urlopen(url)
 	except Exception as e:
@@ -179,14 +178,16 @@ class VideoStream:
 
 	def update(self):
 		if type(self.src) == str:
-			stream = self.netconn()
-
+			stream = None
 			data = bytes()
 			while RUN:
 				if self.stopped:
 					return
 				if self.paused:
 					continue
+
+				if stream is None:
+					stream = self.netconn()
 
 				try:
 					data += stream.read(1)
@@ -234,9 +235,7 @@ class VideoStream:
 					print('Camera %s error: %s' % (self.src, e))
 
 	def read(self):
-		#self.pause()
 		img = self.frame
-		#self.start()
 		return img
 
 	def pause(self):
@@ -266,7 +265,7 @@ def comp(*img):
 	img = list(img)
 
 	while any(i is None for i in img):
-			img.remove(None)
+		img.remove(None)
 
 	if len(img) == 0:
 		vis = np.zeros((1, 1), np.uint8)
@@ -324,12 +323,13 @@ class Game:
 
 	def endStage(self):
 		geturl('http://%s:3000/events/0/event_1?param_1=%i' % (self.server, self.stage))
+		print('End stage: ' + str(self.stage))
 		if self.stage != 3:
 			self.round = 0
 			self.stage = 0
 
 	def nextRound(self):
-		endRound = {1:3, 2:2, 3:1}
+		endRound = {1: 3, 2: 2, 3: 1}
 		if self.round == endRound[self.stage]:
 			self.endStage()
 			return
