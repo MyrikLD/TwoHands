@@ -29,7 +29,7 @@ with open('settings.json') as json_data:
 
 
 def geturl(url):
-	print("SEND: " % url)
+	print("SEND: " + str(url))
 	try:
 		url = urllib.urlopen(url)
 	except Exception as e:
