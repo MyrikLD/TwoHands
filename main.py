@@ -319,6 +319,7 @@ class Game:
 		self.btns = list([random.choice(desk.L), random.choice(desk.R)])
 		for i in self.btns:
 			i.led(True)
+		print('Random buttons: ' + str(self.btns))
 
 	def endStage(self):
 		print('End stage: ' + str(self.stage))
@@ -329,32 +330,31 @@ class Game:
 
 	def nextRound(self):
 		endRound = {1: 3, 2: 2, 3: 1}
+		print('End round: %i/%i' % (self.round, endRound[self.stage]))
 		if self.round == endRound[self.stage]:
 			self.endStage()
 			return
 		else:
 			self.round += 1
 			self.getRandBtns()
-			print('next round: ' + str(self.round))
 
 	def resetRound(self):
-		print('reset round')
+		print('Reset round')
 		self.round = 0
 		self.getRandBtns()
 
 	def clicked(self, btn):
-		print('click: ' + str(btn.pos) + str(btn.num))
-
 		if self.stage == 0:
 			return
 
-		elif self.stage in [1, 2, 3]:
-			if btn not in self.btns:
-				self.resetRound()
-			else:
-				btn.led(False)
-				if self.btns[0].clicked and self.btns[1].clicked:
-					self.nextRound()
+		print('Click: ' + str(btn))
+
+		if btn not in self.btns:
+			self.resetRound()
+		else:
+			btn.led(False)
+			if self.btns[0].clicked and self.btns[1].clicked:
+				self.nextRound()
 
 
 def createFrame():
