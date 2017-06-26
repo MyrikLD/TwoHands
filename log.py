@@ -3,14 +3,8 @@ import sys
 from logging.handlers import RotatingFileHandler
 
 
-class NoCamFilter(logging.Filter):
-	def filter(self, record):
-		text = record.getMessage()
-		return (not 'VIDIOC' in text) and (not 'VIDEOIO' in text)
-
-
 def Log(name):
-	#logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s %(message)s', datefmt='%H:%M:%S')
+	# logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s %(message)s', datefmt='%H:%M:%S')
 
 	handler = RotatingFileHandler('log.log', maxBytes=100000, backupCount=1)
 	handler.setLevel(logging.INFO)

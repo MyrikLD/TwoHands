@@ -321,7 +321,6 @@ class Game:
 	def reset(self):
 		self.stage = 0
 		self.round = 0
-		self.getRandBtns()
 
 	def getRandBtns(self):
 		desk.leds(False)
