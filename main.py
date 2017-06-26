@@ -11,12 +11,13 @@ from cv2 import imshow, namedWindow, setWindowProperty
 from platform import machine
 from threading import Thread
 from time import sleep
-from log import Log
 
 import cv2
 import numpy as np
 
 from btns import desk, Button
+from log import Log
+
 
 def get_ip_address(ifname):
 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -26,12 +27,13 @@ def get_ip_address(ifname):
 		addr = None
 	return addr
 
+
 STAGE = 0
 LANCAM = list()
 WindowName = 'Term'
 FULLSCREEN = True
 RUN = True
-__version__ = 0.5
+__version__ = 0.6
 log = None
 ip = get_ip_address('eth0' if machine() == 'armv7l' else 'wlp3s0')
 log = Log(ip)
@@ -41,6 +43,7 @@ server = None
 
 with open('settings.json') as json_data:
 	settings = json.load(json_data)
+
 
 def geturl(url):
 	log.debug("SEND: " + str(url))
@@ -305,7 +308,8 @@ class Game:
 	server = '127.0.0.1'
 
 	def __init__(self):
-		self.reset()
+		self.stage = 0
+		self.round = 0
 		Button.callback = self.clicked
 
 	def setServer(self, s):
@@ -314,13 +318,10 @@ class Game:
 			log.info('New server: ' + str(s))
 
 	def start(self, num):
+		log.info('Starting round: ' + str(num))
 		self.getRandBtns()
 		self.round = 0
 		self.stage = num
-
-	def reset(self):
-		self.stage = 0
-		self.round = 0
 
 	def getRandBtns(self):
 		desk.leds(False)
@@ -420,12 +421,13 @@ def serve():
 	log.info("Server started")
 	server.serve_forever()
 
+
 game = Game()
 
 if __name__ == '__main__':
 	WindowName = str(ip)
 	other = settings.get(ip, [])
-	log.info('twoHands: %s' % __version__)
+	log.info('Version: %s' % __version__)
 	log.info('OpenCV: %s' % cv2.__version__)
 	log.info('My addr: %s' % ip)
 	log.info('Other: %s' % other)
