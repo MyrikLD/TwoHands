@@ -322,11 +322,18 @@ class Game:
 			log.info('New server: ' + str(s))
 
 	def start(self, num):
+		if self.stage == num:
+			log.debug('Double start round '+str(num))
+			return None
+
 		if num != 0:
-			log.info('Starting round: ' + str(num))
+			log.info('Starting round ' + str(num))
 			self.getRandBtns()
 		else:
 			log.info('Stop game')
+			desk.leds(False)
+			self.btns = list()
+
 		self.round = 0
 		self.stage = num
 
@@ -351,7 +358,7 @@ class Game:
 
 	def nextRound(self):
 		endRound = {1: 3, 2: 2, 3: 1}
-		log.info('End round: %i/%i' % (self.round, endRound[self.stage]))
+		log.info('End round: %i/%i' % (self.round+1, endRound[self.stage]+1))
 		if self.round == endRound[self.stage]:
 			self.endStage()
 			return
