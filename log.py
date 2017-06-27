@@ -7,7 +7,7 @@ def Log(name):
 	# logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s %(message)s', datefmt='%H:%M:%S')
 
 	handler = RotatingFileHandler('log.log', maxBytes=100000, backupCount=1)
-	handler.setLevel(logging.INFO)
+	handler.setLevel(logging.DEBUG)
 	formatter = logging.Formatter('%(asctime)s.%(msecs)03d [%(name)s] %(levelname)s %(message)s',
 	                              datefmt='%Y-%m-%d %H:%M:%S')
 	handler.setFormatter(formatter)

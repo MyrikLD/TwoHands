@@ -119,10 +119,8 @@ class CamHandler(BaseHTTPRequestHandler):
 			while RUN and self.connection._sock != None:
 				try:
 					num = int(name)
-					img = self.streams[num].read()
-					if img is not None:
-						img = cv2.imencode(".png", img)[1].tostring()
-					else:
+					img = str(self.streams[num])
+					if len(img) == 0:
 						continue
 					try:
 						data = b'--jpgboundary\r\n'
@@ -270,6 +268,12 @@ class VideoStream:
 		self.stop()
 		self.stream.release()
 
+	def __str__(self):
+		f = self.frame
+		if f is not None:
+			return cv2.imencode(".png", self.frame)[1].tostring()
+		return ''
+
 
 def getImg(c):
 	for i in c:
@@ -318,8 +322,11 @@ class Game:
 			log.info('New server: ' + str(s))
 
 	def start(self, num):
-		log.info('Starting round: ' + str(num))
-		self.getRandBtns()
+		if num != 0:
+			log.info('Starting round: ' + str(num))
+			self.getRandBtns()
+		else:
+			log.info('Stop game')
 		self.round = 0
 		self.stage = num
 
@@ -432,7 +439,6 @@ if __name__ == '__main__':
 	log.info('My addr: %s' % ip)
 	log.info('Other: %s' % other)
 	cam = list([VideoStream(0).start(), VideoStream(1).start()])
-	log.info('Cam created')
 
 	if FULLSCREEN:
 		namedWindow(WindowName, cv2.WND_PROP_FULLSCREEN)
