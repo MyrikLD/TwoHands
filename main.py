@@ -45,8 +45,8 @@ with open('settings.json') as json_data:
 	settings = json.load(json_data)
 
 
-def geturl(url):
-	log.debug("SEND: " + str(url))
+def geturl(text, retry=True):
+	log.debug("SEND: " + str(text))
 	try:
 		url = urllib.urlopen(url)
 	except Exception as e:
@@ -54,7 +54,11 @@ def geturl(url):
 		return e
 	ret = url.getcode()
 	if ret != 200:
-		log.warning('RET: ' + str(ret))
+		if retry:
+			log.warning('RET: ' + str(ret))
+			geturl(text, False)
+		else:
+			log.error('RET: ' + str(ret))
 	url.close()
 	return ret
 
@@ -99,14 +103,14 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.send_response(200)
 			self.send_header('Content-type', 'application/json')
 			self.end_headers()
-			self.wfile.write('{success: 1}')
+			self.wfile.write('{"success": 1}')
 
 		if name == '0' and end == '':
 			game.setServer(server)
 			self.send_response(200)
 			self.send_header('Content-type', 'application/json')
 			self.end_headers()
-			self.wfile.write('{state_int_1: %i, state_int_2: %i}' % (game.stage, game.round))
+			self.wfile.write('{"state_int_1": %i, "state_int_2": %i}' % (game.stage, game.round))
 
 		if end == 'mjpg':
 			try:
