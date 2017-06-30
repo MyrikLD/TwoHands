@@ -48,7 +48,7 @@ with open('settings.json') as json_data:
 def geturl(text, retry=True):
 	log.debug("SEND: " + str(text))
 	try:
-		url = urllib.urlopen(url)
+		url = urllib.urlopen(text)
 	except Exception as e:
 		log.error(e)
 		return e
