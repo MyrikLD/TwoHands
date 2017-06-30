@@ -67,13 +67,12 @@ class CamHandler(BaseHTTPRequestHandler):
 	streams = None
 
 	def log_message(self, format, *args):
-		if len(args) > 0:
-			if args[0] == 'GET /0 HTTP/1.1':
-				return
-			else:
-				log.debug(args[0])
+		pass
 
 	def do_GET(self):
+		if self.path != '/0':
+			log.debug("GET: " + self.path)
+
 		path = self.path.split('/')[1:]
 		data = path[-1]
 		name = data
