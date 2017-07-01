@@ -332,10 +332,14 @@ class Game:
 		if num != 0:
 			log.info('Starting round ' + str(num))
 			self.getRandBtns()
+			for i in cam:
+				i.paused = False
 		else:
 			log.info('Stop game')
 			desk.leds(False)
 			self.btns = list()
+			for i in cam:
+				i.paused = True
 
 		self.round = 0
 		self.stage = num
