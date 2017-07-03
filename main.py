@@ -5,8 +5,6 @@ import re
 import socket
 import struct
 import urllib
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-from SocketServer import ThreadingMixIn
 from cv2 import imshow, namedWindow, setWindowProperty
 from platform import machine
 from threading import Thread
@@ -14,7 +12,8 @@ from time import sleep
 
 import cv2
 import numpy as np
-
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from SocketServer import ThreadingMixIn
 from btns import desk, Button
 from log import Log
 
@@ -70,15 +69,15 @@ class CamHandler(BaseHTTPRequestHandler):
 		pass
 
 	def do_GET(self):
-		if self.path != '/0':
-			log.debug("GET: " + self.path)
-
 		path = self.path.split('/')[1:]
 		data = path[-1]
 		name = data
 		args = dict()
 		end = str()
 		server = self.client_address[0]
+
+		if self.path != '/0':
+			log.debug('GET:' + str(server) + " -> " + self.path)
 
 		if '?' in data:
 			name, args = data.split('?')
@@ -117,7 +116,8 @@ class CamHandler(BaseHTTPRequestHandler):
 				self.send_header('Content-type', 'multipart/x-mixed-replace; boundary=--jpgboundary')
 				self.send_header('Connection', 'keep-alive')
 				self.end_headers()
-			except Exception:
+			except Exception as e:
+				log.error(str(e))
 				return
 			while RUN and self.connection._sock != None:
 				try:
@@ -134,6 +134,7 @@ class CamHandler(BaseHTTPRequestHandler):
 						data += b'\r\n'
 						self.connection._sock.send(data)
 					except Exception as e:
+						log.error(str(e))
 						break
 				except KeyboardInterrupt:
 					break
@@ -199,6 +200,7 @@ class VideoStream:
 			data = bytes()
 			while RUN:
 				if self.stopped:
+					log.warning('cam %s stoping' % str(self.src))
 					return
 				if self.paused:
 					continue
@@ -234,6 +236,7 @@ class VideoStream:
 						try:
 							jpg += stream.read(l - len(jpg))
 						except Exception as e:
+							log.error(str(e))
 							stream.close()
 							stream = self.netconn()
 
@@ -257,14 +260,17 @@ class VideoStream:
 
 	def pause(self):
 		self.paused = True
+		log.debug('cam %s -> pause' % str(self.src))
 		return self
 
 	def start(self):
 		self.paused = False
+		log.debug('cam %s -> start' % str(self.src))
 		return self
 
 	def stop(self):
 		self.stopped = True
+		log.debug('cam %s -> stop' % str(self.src))
 		return self
 
 	def __del__(self):
@@ -326,7 +332,7 @@ class Game:
 
 	def start(self, num):
 		if self.stage == num:
-			log.debug('Double start round '+str(num))
+			log.debug('Double start round ' + str(num))
 			return None
 
 		if num != 0:
@@ -365,7 +371,7 @@ class Game:
 
 	def nextRound(self):
 		endRound = {1: 3, 2: 2, 3: 1}
-		log.info('End round: %i/%i' % (self.round+1, endRound[self.stage]+1))
+		log.info('End round: %i/%i' % (self.round + 1, endRound[self.stage] + 1))
 		if self.round == endRound[self.stage]:
 			self.endStage()
 			return
