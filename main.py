@@ -77,7 +77,7 @@ class CamHandler(BaseHTTPRequestHandler):
 		server = self.client_address[0]
 
 		if self.path != '/0':
-			log.debug('GET:' + str(server) + " -> " + self.path)
+			log.debug(str(server) + " -> " + self.path)
 
 		if '?' in data:
 			name, args = data.split('?')
@@ -117,7 +117,7 @@ class CamHandler(BaseHTTPRequestHandler):
 				self.send_header('Connection', 'keep-alive')
 				self.end_headers()
 			except Exception as e:
-				log.error(str(e))
+				log.error(str(server) + ' -> ' + str(e))
 				return
 			while RUN and self.connection._sock != None:
 				try:
@@ -134,7 +134,7 @@ class CamHandler(BaseHTTPRequestHandler):
 						data += b'\r\n'
 						self.connection._sock.send(data)
 					except Exception as e:
-						log.error(str(e))
+						log.error(str(server) + ' -> ' + str(e))
 						break
 				except KeyboardInterrupt:
 					break
