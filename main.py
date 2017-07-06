@@ -214,7 +214,7 @@ class VideoStream:
 					log.error(e)
 					data = bytes()
 					stream.close()
-					stream = self.netconn()
+					stream = None
 					continue
 
 				b = data.find(b'\r\n\r\n')
@@ -238,9 +238,12 @@ class VideoStream:
 						except Exception as e:
 							log.error(str(e))
 							stream.close()
-							stream = self.netconn()
+							stream = None
+							jpg = bytes()
+							break
 
-					self.frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+					if len(jpg) == l:
+						self.frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
 
 		else:
 			while RUN:
