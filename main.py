@@ -1,3 +1,4 @@
+#!/bin/python2
 import fcntl
 import json
 import random
@@ -76,7 +77,7 @@ class CamHandler(BaseHTTPRequestHandler):
 		end = str()
 		server = self.client_address[0]
 
-		if self.path != '/0':
+		if self.path not in ['/0','/favicon.ico']:
 			log.debug(str(server) + " -> " + self.path)
 
 		if '?' in data:
@@ -109,6 +110,26 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.send_header('Content-type', 'application/json')
 			self.end_headers()
 			self.wfile.write('{"state_int_1": %i, "state_int_2": %i}' % (game.stage, game.round))
+
+		if name == 'log':
+			self.send_response(200)
+			self.send_header('Content-type', 'text/html')
+			self.end_headers()
+			self.wfile.write('<html><body><pre>')
+			with open('log.log') as f:
+				for i in f:
+					self.wfile.write(str(i))
+			self.wfile.write('</pre></body></html>')
+
+		if name == 'run':
+			self.send_response(200)
+			self.send_header('Content-type', 'text/html')
+			self.end_headers()
+			self.wfile.write('<html><body>')
+			self.wfile.write('<a href="/execute_1?param_1=0">Off</a></br>')
+			for i in range(3):
+				self.wfile.write('<a href="/execute_1?param_1=%(lvl)i">Level %(lvl)i</a></br>'%{'lvl':i+1})
+			self.wfile.write('</body></html>')
 
 		if end == 'mjpg':
 			try:
@@ -208,6 +229,10 @@ class VideoStream:
 				if stream is None:
 					stream = self.netconn()
 
+				if len(data)==0:
+					while data != b'-':
+						data = stream.read(1)
+
 				try:
 					data += stream.read(1)
 				except Exception as e:
@@ -220,6 +245,8 @@ class VideoStream:
 				b = data.find(b'\r\n\r\n')
 
 				if b == -1:
+					if len(data) > 1000:
+						data = bytes()
 					continue
 
 				a = data.find(b'--')
@@ -296,8 +323,7 @@ def getImg(c):
 def comp(*img):
 	img = list(img)
 
-	while any(i is None for i in img):
-		img.remove(None)
+	img = filter(lambda x: x is not None, img)
 
 	if len(img) == 0:
 		vis = np.zeros((1, 1), np.uint8)
@@ -329,7 +355,7 @@ class Game:
 		Button.callback = self.clicked
 
 	def setServer(self, s):
-		if self.server != s:
+		if self.server != s and s != '127.0.0.1':
 			self.server = s
 			log.info('New server: ' + str(s))
 
