@@ -270,7 +270,11 @@ class VideoStream:
 							break
 
 					if len(jpg) == l:
-						self.frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+						try:
+							img = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+							self.frame = img
+						except Exception as e:
+							log.error(e)
 
 		else:
 			while RUN:
