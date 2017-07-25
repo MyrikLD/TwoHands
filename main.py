@@ -103,7 +103,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			name, end = name.split('.')
 
 		if name == 'execute_1':
-			game.setServer(server)
+			#game.setServer(server)
 			param_1 = int(args.get('param_1', ''))
 			game.start(param_1)
 			self.send_response(200)
@@ -187,6 +187,12 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.wfile.write('<img src="/1.mjpg"/><img src="/0.mjpg"/></br>')
 			for i in settings.get(ip, []):
 				self.wfile.write(htmlButton(i[0], '//'+str(i[0])+'/'))
+			self.wfile.write('</br>')
+			self.wfile.write(htmlButton('Off', '/execute_1?param_1=0'))
+			for i in range(3):
+				self.wfile.write(htmlButton('Level %i' % (i + 1), '/execute_1?param_1=%i' % (i + 1)))
+			self.wfile.write('</br>')
+			self.wfile.write(htmlButton('Log', '/log'))
 			self.wfile.write('</body></html>')
 
 		if name.isdigit():
