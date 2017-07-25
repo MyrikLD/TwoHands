@@ -12,6 +12,7 @@ from cv2 import imshow, namedWindow, setWindowProperty
 from platform import machine
 from threading import Thread
 from time import sleep
+import commands
 
 import cv2
 import numpy as np
@@ -130,7 +131,11 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.wfile.write('<a href="/execute_1?param_1=0">Off</a></br>')
 			for i in range(3):
 				self.wfile.write('<a href="/execute_1?param_1=%(lvl)i">Level %(lvl)i</a></br>' % {'lvl': i + 1})
+			self.wfile.write('<a href="/reboot">Reboot</a></br>')
 			self.wfile.write('</body></html>')
+
+		if name == 'reboot':
+			a = commands.getoutput('sudo reboot')
 
 		if end == 'mjpg':
 			try:
