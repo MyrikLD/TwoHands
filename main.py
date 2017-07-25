@@ -192,7 +192,8 @@ class CamHandler(BaseHTTPRequestHandler):
 			for i in range(2)[::-1]:
 				self.wfile.write('<div style="%s">' % ('display: inline-block;'))
 				self.wfile.write('<a href="/%(id)i.stats"><img id="img%(id)i" src="/%(id)i.mjpg"/></a>' % {'id': i})
-				self.wfile.write('</br><a id="stats%s">' % i)
+				self.wfile.write('</br><a id="stats%s"></a>' % i)
+				self.wfile.write('</br><a id="lanstats%s"></a>' % i)
 				self.wfile.write('</div>')
 			self.wfile.write('</div>')
 			for i in settings.get(ip, []):
@@ -222,6 +223,15 @@ class CamHandler(BaseHTTPRequestHandler):
 							  }
 							})}, 500)</script>''' % {'id': i}
 				self.wfile.write(ajax)
+			for i in range(2):
+				ajax = '''<script>setInterval(function(){$.ajax({
+							  url: "/%(id)i.stats",
+							  data: "lan",
+							  success: function(result) {
+							    $("#lanstats%(id)i").html(result["status"]+" "+result["time"]);
+							  }
+							})}, 500)</script>''' % {'id': i}
+				self.wfile.write(ajax)
 			self.wfile.write('</body></html>')
 
 		if name.isdigit():
@@ -238,7 +248,7 @@ class CamHandler(BaseHTTPRequestHandler):
 				self.send_header('Content-type', 'application/json')
 				self.end_headers()
 
-				if game.stage == 3:
+				if 'lan' in args:
 					tm = time() - LANCAM[num].time
 					self.wfile.write('{"status":"%s",' % LANCAM[num].state)
 					self.wfile.write('"time": "%s"}' % str(round(tm, 4)))
