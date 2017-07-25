@@ -188,7 +188,7 @@ class CamHandler(BaseHTTPRequestHandler):
 				self.wfile.write('</div>')
 			self.wfile.write('</div>')
 			for i in settings.get(ip, []):
-				self.wfile.write(htmlButton(i[0], '//' + str(i[0]) + '/'))
+				self.wfile.write(htmlButton(i[0], '//' + str(i[0]) + ':8080/'))
 			self.wfile.write('</br>')
 			self.wfile.write(htmlButton('Off', '/execute_1?param_1=0', True))
 			for i in range(3):
