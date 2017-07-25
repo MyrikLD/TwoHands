@@ -6,7 +6,7 @@ import random
 import re
 import socket
 import struct
-import urllib
+import urllib2 as urllib
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from SocketServer import ThreadingMixIn
 from cv2 import imshow, namedWindow, setWindowProperty
@@ -105,7 +105,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			name, end = name.split('.')
 
 		if name == 'execute_1':
-			#game.setServer(server)
+			# game.setServer(server)
 			param_1 = int(args.get('param_1', ''))
 			game.start(param_1)
 			self.send_response(200)
@@ -185,12 +185,18 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.wfile.write('<html>')
 			self.wfile.write(btncss)
 			self.wfile.write('<body>')
-			#self.wfile.write('stage: %i</br>round: %i</br>' % (game.stage, game.round))
-			self.wfile.write('<div id="stage"></div>')
-			self.wfile.write('<div id="round"></div>')
-			self.wfile.write('<a href="/1.stats"><img src="/1.mjpg"/></a><a href="/0.stats"><img src="/0.mjpg"/></a></br>')
+			# self.wfile.write('stage: %i</br>round: %i</br>' % (game.stage, game.round))
+			self.wfile.write('stage: <a id="stage"></a></br>')
+			self.wfile.write('round: <a id="round"></a></br>')
+			self.wfile.write('<div>')
+			for i in range(2)[::-1]:
+				self.wfile.write('<div style="%s">' % ('display: inline-block;'))
+				self.wfile.write('<a href="/%(id)i.stats"><img id="img%(id)i" src="/%(id)i.mjpg"/></a>' % {'id': i})
+				self.wfile.write('</br><a id="stats%s">' % i)
+				self.wfile.write('</div>')
+			self.wfile.write('</div>')
 			for i in settings.get(ip, []):
-				self.wfile.write(htmlButton(i[0], '//'+str(i[0])+'/'))
+				self.wfile.write(htmlButton(i[0], '//' + str(i[0]) + '/'))
 			self.wfile.write('</br>')
 			self.wfile.write(htmlButton('Off', '/execute_1?param_1=0', True))
 			for i in range(3):
@@ -202,10 +208,20 @@ class CamHandler(BaseHTTPRequestHandler):
 			ajax = '''<script>setInterval(function(){$.ajax({
 			  url: "/0",
 			  success: function(result) {
-			    $("#stage").html("round: "+result['state_int_1']+"</br>stage: "+result['state_int_2']);
+			    $("#stage").html(result['state_int_1']);
+			    $("#round").html(result['state_int_2']);
 			  }
 			})}, 500)</script>'''
 			self.wfile.write(ajax)
+
+			for i in range(2):
+				ajax = '''<script>setInterval(function(){$.ajax({
+							  url: "/%(id)i.stats",
+							  success: function(result) {
+							    $("#stats%(id)i").html(result["status"]+" "+result["time"]);
+							  }
+							})}, 500)</script>''' % {'id': i}
+				self.wfile.write(ajax)
 			self.wfile.write('</body></html>')
 
 		if name.isdigit():
@@ -219,12 +235,17 @@ class CamHandler(BaseHTTPRequestHandler):
 				self.wfile.write('</body></html>')
 			if end == 'stats':
 				self.send_response(200)
-				self.send_header('Content-type', 'text/html')
+				self.send_header('Content-type', 'application/json')
 				self.end_headers()
-				self.wfile.write('<html><body>')
-				self.wfile.write('%s</br>' % LANCAM[num].state)
-				self.wfile.write('last: %s</br>' % str(time() - LANCAM[num].time))
-				self.wfile.write('</body></html>')
+
+				if game.stage == 3:
+					tm = time() - LANCAM[num].time
+					self.wfile.write('{"status":"%s",' % LANCAM[num].state)
+					self.wfile.write('"time": "%s"}' % str(round(tm, 4)))
+				else:
+					tm = time() - self.streams[num].time
+					self.wfile.write('{"status":"%s",' % self.streams[num].state)
+					self.wfile.write('"time": "%s"}' % str(round(tm, 4)))
 
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -269,7 +290,7 @@ class VideoStream:
 		stream = None
 		while stream is None:
 			try:
-				stream = urllib.urlopen(self.src)
+				stream = urllib.urlopen(self.src, timeout=1)
 			except Exception as e:
 				log.error(self.src + ': ' + str(e))
 				sleep(1)
@@ -291,7 +312,7 @@ class VideoStream:
 						continue
 
 					if stream is None:
-						self.state = 'wait 4 stream'
+						self.state = 'wait for stream'
 						stream = self.netconn()
 
 					if len(self.data) == 0:
@@ -365,6 +386,7 @@ class VideoStream:
 						continue
 					try:
 						self.grabbed = self.stream.grab()
+						self.state = 'get frame'
 						_, self.frame = self.stream.retrieve()
 						self.time = time()
 					except Exception as e:
