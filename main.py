@@ -40,7 +40,7 @@ log = None
 ip = get_ip_address('eth0' if machine() == 'armv7l' else 'wlp3s0')
 log = Log(ip)
 cam = list()
-btncss = '<head><style type="text/css">a.button {-webkit-appearance: button;\n-moz-appearance: button;\nappearance: button;\ntext-decoration: none;\ncolor: initial;}\n</style></head>'
+btncss = '<head><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>\n<style type="text/css">a.button {-webkit-appearance: button;\n-moz-appearance: button;\nappearance: button;\ntext-decoration: none;\ncolor: initial;}\n</style></head>'
 
 server = None
 
@@ -66,7 +66,9 @@ def geturl(text, retry=True):
 	return ret
 
 
-def htmlButton(text, href):
+def htmlButton(text, href, js=False):
+	if js:
+		href = 'javascript: $.get(\'%s\', function( data ) {console.log(data);})' % href
 	return '<a href="%s" class="button" style="margin: 5px; padding: 5px">%s</a>' % (href, text)
 
 
@@ -183,16 +185,27 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.wfile.write('<html>')
 			self.wfile.write(btncss)
 			self.wfile.write('<body>')
-			self.wfile.write('stage: %i</br>round: %i</br>' % (game.stage, game.round))
+			#self.wfile.write('stage: %i</br>round: %i</br>' % (game.stage, game.round))
+			self.wfile.write('<div id="stage"></div>')
+			self.wfile.write('<div id="round"></div>')
 			self.wfile.write('<a href="/1.stats"><img src="/1.mjpg"/></a><a href="/0.stats"><img src="/0.mjpg"/></a></br>')
 			for i in settings.get(ip, []):
 				self.wfile.write(htmlButton(i[0], '//'+str(i[0])+'/'))
 			self.wfile.write('</br>')
-			self.wfile.write(htmlButton('Off', '/execute_1?param_1=0'))
+			self.wfile.write(htmlButton('Off', '/execute_1?param_1=0', True))
 			for i in range(3):
-				self.wfile.write(htmlButton('Level %i' % (i + 1), '/execute_1?param_1=%i' % (i + 1)))
+				self.wfile.write(htmlButton('Level %i' % (i + 1), '/execute_1?param_1=%i' % (i + 1), True))
 			self.wfile.write('</br>')
 			self.wfile.write(htmlButton('Log', '/log'))
+			self.wfile.write('</br>')
+			self.wfile.write(htmlButton('Reboot', '/reboot', True) + '</br>')
+			ajax = '''<script>setInterval(function(){$.ajax({
+			  url: "/0",
+			  success: function(result) {
+			    $("#stage").html("round: "+result['state_int_1']+"</br>stage: "+result['state_int_2']);
+			  }
+			})}, 500)</script>'''
+			self.wfile.write(ajax)
 			self.wfile.write('</body></html>')
 
 		if name.isdigit():
