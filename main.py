@@ -184,7 +184,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.wfile.write(btncss)
 			self.wfile.write('<body>')
 			self.wfile.write('stage: %i</br>round: %i</br>' % (game.stage, game.round))
-			self.wfile.write('<img src="/1.mjpg"/><img src="/0.mjpg"/></br>')
+			self.wfile.write('<a href="/1.stats"><img src="/1.mjpg"/></a><a href="/0.stats"><img src="/0.mjpg"/></a></br>')
 			for i in settings.get(ip, []):
 				self.wfile.write(htmlButton(i[0], '//'+str(i[0])+'/'))
 			self.wfile.write('</br>')
