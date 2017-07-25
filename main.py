@@ -180,7 +180,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.wfile.write('stage: <a id="stage"></a></br>')
 			self.wfile.write('round: <a id="round"></a></br>')
 			self.wfile.write('<div>')
-			for i in range(2)[::-1]:
+			for i in range(2):
 				self.wfile.write('<div style="%s">' % ('display: inline-block;'))
 				self.wfile.write('<a><img id="img%(id)i" src="/%(id)i.mjpg"/></a>' % {'id': i})
 				self.wfile.write('</br><a id="stats%s"></a>' % i)
