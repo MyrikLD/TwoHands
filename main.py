@@ -12,7 +12,7 @@ from SocketServer import ThreadingMixIn
 from cv2 import imshow, namedWindow, setWindowProperty
 from platform import machine
 from threading import Thread
-from time import sleep
+from time import sleep, time
 
 import cv2
 import numpy as np
@@ -132,7 +132,8 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.send_header('Content-type', 'text/html')
 			self.end_headers()
 			self.wfile.write('<html>')
-			self.wfile.write('<head><style type="text/css">a.button {-webkit-appearance: button;\n-moz-appearance: button;\nappearance: button;\ntext-decoration: none;\ncolor: initial;}\n</style></head>')
+			self.wfile.write(
+				'<head><style type="text/css">a.button {-webkit-appearance: button;\n-moz-appearance: button;\nappearance: button;\ntext-decoration: none;\ncolor: initial;}\n</style></head>')
 			self.wfile.write('<body>')
 
 			self.wfile.write(Button('Off', '/execute_1?param_1=0') + '</br>')
@@ -175,13 +176,23 @@ class CamHandler(BaseHTTPRequestHandler):
 					break
 			return
 
-		if end == 'html' and len(path) == 1 and name.isdigit():
-			self.send_response(200)
-			self.send_header('Content-type', 'text/html')
-			self.end_headers()
-			self.wfile.write('<html><head></head><body>')
-			self.wfile.write('<img src="/%s.mjpg"/>' % int(name))
-			self.wfile.write('</body></html>')
+		if name.isdigit():
+			num = int(name)
+			if end == 'html' and len(path) == 1:
+				self.send_response(200)
+				self.send_header('Content-type', 'text/html')
+				self.end_headers()
+				self.wfile.write('<html><body>')
+				self.wfile.write('<img src="/%s.mjpg"/>' % num)
+				self.wfile.write('</body></html>')
+			if end == 'stats':
+				self.send_response(200)
+				self.send_header('Content-type', 'text/html')
+				self.end_headers()
+				self.wfile.write('<html><body>')
+				self.wfile.write('%s</br>' % LANCAM[num].state)
+				self.wfile.write('last: %s</br>' % str(time() - LANCAM[num].time))
+				self.wfile.write('</body></html>')
 
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -199,6 +210,7 @@ class VideoStream:
 	net = None
 
 	def __init__(self, src=0):
+		self.state = 'creating'
 		if type(src) == int:
 			self.src = src
 			log.info('Creating camera %s' % src)
@@ -217,6 +229,7 @@ class VideoStream:
 			self.src = str(src)
 			self.stopped = False
 			self.paused = True
+		self.time = time()
 		self.th = Thread(target=self.update, args=())
 		self.th.start()
 
@@ -234,79 +247,94 @@ class VideoStream:
 		try:
 			if type(self.src) == str:
 				stream = None
-				data = bytes()
+				self.data = bytes()
+				self.state = 'starting'
 				while RUN:
 					if self.stopped:
 						log.warning('cam %s stoping' % str(self.src))
+						self.state = 'stopped'
 						return
 					if self.paused:
+						self.state = 'paused'
 						continue
 
 					if stream is None:
+						self.state = 'wait 4 stream'
 						stream = self.netconn()
 
-					if len(data) == 0:
-						while data != b'-':
+					if len(self.data) == 0:
+						while self.data != b'-':
+							self.state = 'wait for "-"'
 							try:
-								data = stream.read(1)
+								self.data = stream.read(1)
 							except Exception as e:
 								log.error(e)
-								data = bytes()
+								self.data = bytes()
 								stream.close()
 								stream = None
 								continue
 
 					try:
-						data += stream.read(1)
+						self.state = 'read stream %i' % len(self.data)
+						self.data += stream.read(1)
 					except Exception as e:
 						log.error(e)
-						data = bytes()
+						self.data = bytes()
 						stream.close()
 						stream = None
 						continue
 
-					b = data.find(b'\r\n\r\n')
+					b = self.data.find(b'\r\n\r\n')
 
 					if b == -1:
-						if len(data) > 1000:
-							data = bytes()
+						if len(self.data) > 1000:
+							self.state = 'reset'
+							self.data = bytes()
 						continue
 
-					a = data.find(b'--')
+					a = self.data.find(b'--')
 
 					if a != -1 and b != -1:
-						head = data[a:b].split('\r\n')
+						head = self.data[a:b].split('\r\n')
+						self.data = bytes()
+
 						for i in head:
 							if 'length' in i:
 								l = int(i[i.find(': ') + 2:])
 
-						jpg = bytes()
-						data = bytes()
-						while len(jpg) < l:
+						self.jpg = bytes()
+
+						while len(self.jpg) < l:
 							try:
-								jpg += stream.read(l - len(jpg))
+								self.state = 'read jpg'
+								self.jpg += stream.read(l - len(self.jpg))
 							except Exception as e:
 								log.error(str(e))
 								stream.close()
 								stream = None
-								jpg = bytes()
+								self.jpg = bytes()
 								break
 
-						if len(jpg) == l:
+						if len(self.jpg) == l:
 							try:
-								img = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+								self.state = 'parse jpg'
+								img = cv2.imdecode(np.fromstring(self.jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
 								self.frame = img
+								self.time = time()
 							except Exception as e:
 								log.error(e)
 			else:
 				while RUN:
 					if self.stopped:
+						self.state = 'stopped'
 						return
 					if self.paused:
+						self.state = 'paused'
 						continue
 					try:
 						self.grabbed = self.stream.grab()
 						_, self.frame = self.stream.retrieve()
+						self.time = time()
 					except Exception as e:
 						log.error('Camera %s error: %s' % (self.src, e))
 		except Exception as e:
