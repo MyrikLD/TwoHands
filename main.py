@@ -40,6 +40,7 @@ log = None
 ip = get_ip_address('eth0' if machine() == 'armv7l' else 'wlp3s0')
 log = Log(ip)
 cam = list()
+btncss = '<head><style type="text/css">a.button {-webkit-appearance: button;\n-moz-appearance: button;\nappearance: button;\ntext-decoration: none;\ncolor: initial;}\n</style></head>'
 
 server = None
 
@@ -132,8 +133,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.send_header('Content-type', 'text/html')
 			self.end_headers()
 			self.wfile.write('<html>')
-			self.wfile.write(
-				'<head><style type="text/css">a.button {-webkit-appearance: button;\n-moz-appearance: button;\nappearance: button;\ntext-decoration: none;\ncolor: initial;}\n</style></head>')
+			self.wfile.write(btncss)
 			self.wfile.write('<body>')
 
 			self.wfile.write(htmlButton('Off', '/execute_1?param_1=0') + '</br>')
@@ -180,9 +180,13 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.send_response(200)
 			self.send_header('Content-type', 'text/html')
 			self.end_headers()
-			self.wfile.write('<html><body>')
+			self.wfile.write('<html>')
+			self.wfile.write(btncss)
+			self.wfile.write('<body>')
 			self.wfile.write('stage: %i</br>round: %i</br>' % (game.stage, game.round))
-			self.wfile.write('<img src="/1.mjpg"/><img src="/0.mjpg"/>')
+			self.wfile.write('<img src="/1.mjpg"/><img src="/0.mjpg"/></br>')
+			for i in settings.get(ip, []):
+				self.wfile.write(htmlButton(i[0], '//'+str(i[0])+'/'))
 			self.wfile.write('</body></html>')
 
 		if name.isdigit():
