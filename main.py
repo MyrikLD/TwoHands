@@ -83,7 +83,7 @@ class CamHandler(BaseHTTPRequestHandler):
 		end = str()
 		server = self.client_address[0]
 
-		if self.path not in ['/0', '/favicon.ico']:
+		if self.path not in ['/0', '/favicon.ico', '/0.stats', '/1.stats']:
 			log.debug(str(server) + " -> " + self.path)
 
 		if '?' in data:
@@ -416,7 +416,7 @@ class Game:
 		Button.callback = self.clicked
 
 	def setServer(self, s):
-		if self.server != s and s != '127.0.0.1':
+		if self.server != s and s != '127.0.0.1' and s != ip:
 			self.server = s
 			log.info('New server: ' + str(s))
 
