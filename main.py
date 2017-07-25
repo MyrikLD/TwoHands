@@ -120,6 +120,12 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.end_headers()
 			self.wfile.write('{"state_int_1": %i, "state_int_2": %i}' % (game.stage, game.round))
 
+		if name == 'game':
+			self.send_response(200)
+			self.send_header('Content-type', 'application/json')
+			self.end_headers()
+			self.wfile.write('{"stage": %i, "round": %i}' % (game.stage, game.round))
+
 		if name == 'log':
 			self.send_response(200)
 			self.send_header('Content-type', 'text/html')
@@ -176,7 +182,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.wfile.write('<div>')
 			for i in range(2)[::-1]:
 				self.wfile.write('<div style="%s">' % ('display: inline-block;'))
-				self.wfile.write('<a href="/%(id)i.stats"><img id="img%(id)i" src="/%(id)i.mjpg"/></a>' % {'id': i})
+				self.wfile.write('<a><img id="img%(id)i" src="/%(id)i.mjpg"/></a>' % {'id': i})
 				self.wfile.write('</br><a id="stats%s"></a>' % i)
 				self.wfile.write('</br><a id="lanstats%s"></a>' % i)
 				self.wfile.write('</div>')
@@ -192,10 +198,10 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.wfile.write('</br>')
 			self.wfile.write(htmlButton('Reboot', '/reboot', True) + '</br>')
 			ajax = '''<script>setInterval(function(){$.ajax({
-			  url: "/0",
+			  url: "/game",
 			  success: function(result) {
-			    $("#stage").html(result['state_int_1']);
-			    $("#round").html(result['state_int_2']);
+			    $("#stage").html(result['stage']);
+			    $("#round").html(result['round']);
 			  }
 			})}, 500)</script>'''
 			self.wfile.write(ajax)
