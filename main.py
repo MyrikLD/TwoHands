@@ -182,7 +182,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.end_headers()
 			self.wfile.write('<html><body>')
 			self.wfile.write('stage: %i</br>round: %i</br>' % (game.stage, game.round))
-			self.wfile.write('<img src="/0.mjpg"/><img src="/1.mjpg"/>')
+			self.wfile.write('<img src="/1.mjpg"/><img src="/0.mjpg"/>')
 			self.wfile.write('</body></html>')
 
 		if name.isdigit():
