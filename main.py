@@ -86,7 +86,7 @@ class CamHandler(BaseHTTPRequestHandler):
 		end = str()
 		server = self.client_address[0]
 
-		if self.path not in ['/0', '/favicon.ico', '/0.stats', '/1.stats']:
+		if self.path not in ['/0', '/favicon.ico', '/game'] and 'stats' not in self.path:
 			log.debug(str(server) + " -> " + self.path)
 
 		if '?' in data:
