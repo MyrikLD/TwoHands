@@ -65,7 +65,7 @@ def geturl(text, retry=True):
 	return ret
 
 
-def Button(text, href):
+def htmlButton(text, href):
 	return '<a href="%s" class="button" style="margin: 5px; padding: 5px">%s</a>' % (href, text)
 
 
@@ -136,11 +136,11 @@ class CamHandler(BaseHTTPRequestHandler):
 				'<head><style type="text/css">a.button {-webkit-appearance: button;\n-moz-appearance: button;\nappearance: button;\ntext-decoration: none;\ncolor: initial;}\n</style></head>')
 			self.wfile.write('<body>')
 
-			self.wfile.write(Button('Off', '/execute_1?param_1=0') + '</br>')
+			self.wfile.write(htmlButton('Off', '/execute_1?param_1=0') + '</br>')
 			for i in range(3):
-				self.wfile.write(Button('Level %i' % (i + 1), '/execute_1?param_1=%i' % (i + 1)) + '</br>')
+				self.wfile.write(htmlButton('Level %i' % (i + 1), '/execute_1?param_1=%i' % (i + 1)) + '</br>')
 			# self.wfile.write('<a href="/execute_1?param_1=%(lvl)i">Level %(lvl)i</a></br>' % {'lvl': i + 1})
-			self.wfile.write(Button('Reboot', '/reboot') + '</br>')
+			self.wfile.write(htmlButton('Reboot', '/reboot') + '</br>')
 			self.wfile.write('</body></html>')
 
 		if name == 'reboot':
@@ -176,6 +176,14 @@ class CamHandler(BaseHTTPRequestHandler):
 					break
 			return
 
+		if name == 'cam':
+			self.send_response(200)
+			self.send_header('Content-type', 'text/html')
+			self.end_headers()
+			self.wfile.write('<html><body>')
+			self.wfile.write('<img src="/0.mjpg"/><img src="/1.mjpg"/>')
+			self.wfile.write('</body></html>')
+
 		if name.isdigit():
 			num = int(name)
 			if end == 'html' and len(path) == 1:
@@ -183,7 +191,7 @@ class CamHandler(BaseHTTPRequestHandler):
 				self.send_header('Content-type', 'text/html')
 				self.end_headers()
 				self.wfile.write('<html><body>')
-				self.wfile.write('<img src="/%s.mjpg"/>' % num)
+				self.wfile.write('<img src="/%i.mjpg"/>' % num)
 				self.wfile.write('</body></html>')
 			if end == 'stats':
 				self.send_response(200)
@@ -369,7 +377,7 @@ class VideoStream:
 		self.stream.release()
 
 	def __str__(self):
-		f = self.frame
+		f = self.read()
 		if f is not None:
 			return cv2.imencode(".png", self.frame)[1].tostring()
 		return ''
