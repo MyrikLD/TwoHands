@@ -130,21 +130,6 @@ class CamHandler(BaseHTTPRequestHandler):
 					self.wfile.write(str(i))
 			self.wfile.write('</pre></body></html>')
 
-		if name == 'run':
-			self.send_response(200)
-			self.send_header('Content-type', 'text/html')
-			self.end_headers()
-			self.wfile.write('<html>')
-			self.wfile.write(btncss)
-			self.wfile.write('<body>')
-
-			self.wfile.write(htmlButton('Off', '/execute_1?param_1=0') + '</br>')
-			for i in range(3):
-				self.wfile.write(htmlButton('Level %i' % (i + 1), '/execute_1?param_1=%i' % (i + 1)) + '</br>')
-			# self.wfile.write('<a href="/execute_1?param_1=%(lvl)i">Level %(lvl)i</a></br>' % {'lvl': i + 1})
-			self.wfile.write(htmlButton('Reboot', '/reboot') + '</br>')
-			self.wfile.write('</body></html>')
-
 		if name == 'reboot':
 			a = commands.getoutput('sudo reboot')
 
@@ -236,13 +221,6 @@ class CamHandler(BaseHTTPRequestHandler):
 
 		if name.isdigit():
 			num = int(name)
-			if end == 'html' and len(path) == 1:
-				self.send_response(200)
-				self.send_header('Content-type', 'text/html')
-				self.end_headers()
-				self.wfile.write('<html><body>')
-				self.wfile.write('<img src="/%i.mjpg"/>' % num)
-				self.wfile.write('</body></html>')
 			if end == 'stats':
 				self.send_response(200)
 				self.send_header('Content-type', 'application/json')
@@ -489,6 +467,9 @@ class Game:
 			log.debug('Double start round ' + str(num))
 			return None
 
+		if num != 3:
+			for i in LANCAM:
+				i.pause()
 		if num != 0:
 			log.info('Starting round ' + str(num))
 			self.getRandBtns()
