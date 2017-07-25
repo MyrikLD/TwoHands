@@ -464,7 +464,6 @@ class Game:
 
 	def start(self, num):
 		if self.stage == num:
-			log.debug('Double start round ' + str(num))
 			return None
 
 		if num != 3:
