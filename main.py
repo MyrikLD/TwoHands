@@ -1,4 +1,5 @@
 #!/bin/python2
+import commands
 import fcntl
 import json
 import random
@@ -12,7 +13,6 @@ from cv2 import imshow, namedWindow, setWindowProperty
 from platform import machine
 from threading import Thread
 from time import sleep
-import commands
 
 import cv2
 import numpy as np
@@ -63,6 +63,10 @@ def geturl(text, retry=True):
 			log.error('RET: ' + str(ret))
 	url.close()
 	return ret
+
+
+def Button(text, href):
+	return '<a href="%s" class="button" style="margin: 5px; padding: 5px">%s</a>' % (href, text)
 
 
 class CamHandler(BaseHTTPRequestHandler):
@@ -127,11 +131,15 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.send_response(200)
 			self.send_header('Content-type', 'text/html')
 			self.end_headers()
-			self.wfile.write('<html><body>')
-			self.wfile.write('<a href="/execute_1?param_1=0">Off</a></br>')
+			self.wfile.write('<html>')
+			self.wfile.write('<head><style type="text/css">a.button {-webkit-appearance: button;\n-moz-appearance: button;\nappearance: button;\ntext-decoration: none;\ncolor: initial;}\n</style></head>')
+			self.wfile.write('<body>')
+
+			self.wfile.write(Button('Off', '/execute_1?param_1=0') + '</br>')
 			for i in range(3):
-				self.wfile.write('<a href="/execute_1?param_1=%(lvl)i">Level %(lvl)i</a></br>' % {'lvl': i + 1})
-			self.wfile.write('<a href="/reboot">Reboot</a></br>')
+				self.wfile.write(Button('Level %i' % (i + 1), '/execute_1?param_1=%i' % (i + 1)) + '</br>')
+			# self.wfile.write('<a href="/execute_1?param_1=%(lvl)i">Level %(lvl)i</a></br>' % {'lvl': i + 1})
+			self.wfile.write(Button('Reboot', '/reboot') + '</br>')
 			self.wfile.write('</body></html>')
 
 		if name == 'reboot':
