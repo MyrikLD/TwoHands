@@ -16,7 +16,7 @@ def Log(name):
 	handler_err = logging.StreamHandler(sys.stdout)
 	formatter = logging.Formatter('%(asctime)s.%(msecs)03d %(levelname)s %(message)s', datefmt='%H:%M:%S')
 	handler_err.setFormatter(formatter)
-	handler_err.setLevel(logging.DEBUG)
+	handler_err.setLevel(logging.WARNING)
 
 	logger = logging.getLogger(str(name))
 

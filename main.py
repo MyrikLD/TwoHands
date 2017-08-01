@@ -277,7 +277,7 @@ class VideoStream:
 			self.stopped = False
 			self.paused = True
 		self.time = time()
-		self.th = Thread(target=self.update, args=())
+		self.th = Thread(target=self.update)
 		self.th.start()
 
 	def netconn(self):
@@ -374,6 +374,7 @@ class VideoStream:
 				while RUN:
 					if self.stopped:
 						self.state = 'stopped'
+						log.warning('cam %s stoping' % str(self.src))
 						return
 					if self.paused:
 						self.state = 'paused'
@@ -393,7 +394,9 @@ class VideoStream:
 			log.debug('cam %s -> start' % str(self.src))
 			self.paused = False
 		if not self.th.isAlive():
-			log.warning('Where is my thread, %s?' % self.src)
+			log.critical('Thread %s not alive, restarting...' % self.src)
+			self.th = Thread(target=self.update)
+			self.th.start()
 		img = self.frame
 		return img
 
@@ -621,6 +624,7 @@ if __name__ == '__main__':
 
 	while RUN:
 		pass
+
 	log.info('Exit')
 	server.shutdown()
 	th1.join(1)
