@@ -10,6 +10,7 @@ import urllib2 as urllib
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from SocketServer import ThreadingMixIn
 from cv2 import imshow, namedWindow, setWindowProperty
+from datetime import timedelta
 from platform import machine
 from threading import Thread
 from time import sleep, time
@@ -19,6 +20,13 @@ import numpy as np
 
 from btns import desk, Button
 from log import Log
+
+
+def uptime():
+	with open('/proc/uptime', 'r') as f:
+		uptime_seconds = int(float(f.readline().split()[0]))
+	uptime_string = str(timedelta(seconds=uptime_seconds))
+	return uptime_string
 
 
 def get_ip_address(ifname):
@@ -124,7 +132,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			self.send_response(200)
 			self.send_header('Content-type', 'application/json')
 			self.end_headers()
-			self.wfile.write('{"stage": %i, "round": %i}' % (game.stage, game.round))
+			self.wfile.write('{"stage": %i, "round": %i, "uptime": "%s"}' % (game.stage, game.round, uptime()))
 
 		if name == 'log':
 			self.send_response(200)
@@ -179,6 +187,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			# self.wfile.write('stage: %i</br>round: %i</br>' % (game.stage, game.round))
 			self.wfile.write('stage: <a id="stage"></a></br>')
 			self.wfile.write('round: <a id="round"></a></br>')
+			self.wfile.write('uptime: <a id="uptime"></a></br>')
 			self.wfile.write('<div>')
 			for i in range(2):
 				self.wfile.write('<div style="%s">' % ('display: inline-block;'))
@@ -202,6 +211,7 @@ class CamHandler(BaseHTTPRequestHandler):
 			  success: function(result) {
 			    $("#stage").html(result['stage']);
 			    $("#round").html(result['round']);
+			    $("#uptime").html(result['uptime']);
 			  }
 			})}, 500)</script>'''
 			self.wfile.write(ajax)
