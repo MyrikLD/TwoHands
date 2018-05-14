@@ -1,3 +1,4 @@
+#/bin/bash
 VER=2.4.11
 FILENAME=opencv-$VER
 FILEDIR=${FILENAME,,}
