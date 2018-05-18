@@ -55,6 +55,11 @@ server = None
 with open('settings.json') as json_data:
 	settings = json.load(json_data)
 
+def get_cam(num):
+        path = '/dev/v4l/by-path/'+settings['cam'][num]
+        real_path = os.readlink(path)
+        num = re.findall(r'video(\d+)', real_path)[0]
+        return int(num)
 
 def geturl(text, retry=True):
 	log.debug("SEND: " + str(text))
@@ -271,7 +276,7 @@ class VideoStream:
 		if type(src) == int:
 			self.src = src
 			log.info('Creating camera %s' % src)
-			self.stream = cv2.VideoCapture(src)
+			self.stream = cv2.VideoCapture(get_cam(src))
 			self.stream.set(3, 320)
 			self.stream.set(4, 240)
 			try:
